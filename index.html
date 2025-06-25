@@ -8,9 +8,28 @@
     <meta name="keywords" content="school management, education, student portal, lecturer dashboard, academic system" />
     <meta name="author" content="AMEU" />
     <title>AMEU Smart School System</title>
+    <style>
+      /* Prevent FOUC (Flash of Unstyled Content) */
+      #root {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+      #root.loaded {
+        opacity: 1;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Prevent external script conflicts
+      document.addEventListener('DOMContentLoaded', function() {
+        const root = document.getElementById('root');
+        if (root) {
+          root.classList.add('loaded');
+        }
+      });
+    </script>
   </body>
 </html>

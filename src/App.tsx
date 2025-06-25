@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import ProtectedRoute from "./components/ProtectedRoute"
 
 // Public Pages
@@ -31,61 +31,59 @@ import AdminStudents from "./pages/admin/Students"
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/home" element={<Home />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/home" element={<Home />} />
 
-        {/* Auth Routes */}
-        <Route path="/auth/login" element={<Login />} />
-        <Route path="/auth/register" element={<Register />} />
-        <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+      {/* Auth Routes */}
+      <Route path="/auth/login" element={<Login />} />
+      <Route path="/auth/register" element={<Register />} />
+      <Route path="/auth/forgot-password" element={<ForgotPassword />} />
 
-        {/* Protected Student Routes */}
-        <Route
-          path="/student"
-          element={
-            <ProtectedRoute requiredUserType="student">
-              <StudentLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<StudentDashboard />} />
-          <Route path="schedule" element={<TimeSchedule />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="learning-plan" element={<LearningPlan />} />
-          <Route path="help" element={<Help />} />
-          <Route path="contact" element={<Contact />} />
-        </Route>
+      {/* Protected Student Routes */}
+      <Route
+        path="/student"
+        element={
+          <ProtectedRoute requiredUserType="student">
+            <StudentLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<StudentDashboard />} />
+        <Route path="schedule" element={<TimeSchedule />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="messages" element={<Messages />} />
+        <Route path="learning-plan" element={<LearningPlan />} />
+        <Route path="help" element={<Help />} />
+        <Route path="contact" element={<Contact />} />
+      </Route>
 
-        {/* Protected Lecturer Routes */}
-        <Route
-          path="/lecturer"
-          element={
-            <ProtectedRoute requiredUserType="lecturer">
-              <LecturerLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<LecturerDashboard />} />
-        </Route>
+      {/* Protected Lecturer Routes */}
+      <Route
+        path="/lecturer"
+        element={
+          <ProtectedRoute requiredUserType="lecturer">
+            <LecturerLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<LecturerDashboard />} />
+      </Route>
 
-        {/* Protected Admin Routes */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute requiredUserType="admin">
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
-          <Route path="students" element={<AdminStudents />} />
-        </Route>
-      </Routes>
-    </Router>
+      {/* Protected Admin Routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requiredUserType="admin">
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="students" element={<AdminStudents />} />
+      </Route>
+    </Routes>
   )
 }
 
