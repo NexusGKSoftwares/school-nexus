@@ -7,7 +7,7 @@ import tsparser from "@typescript-eslint/parser"
 
 export default [
   {
-    ignores: ["dist", "build", "node_modules"],
+    ignores: ["dist", "build", "node_modules", "*.config.js"],
   },
   {
     files: ["**/*.{ts,tsx}"],
@@ -35,6 +35,7 @@ export default [
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/ban-ts-comment": "off",
     },
   },
 ]

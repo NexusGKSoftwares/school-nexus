@@ -13,6 +13,7 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    host: true,
   },
   build: {
     outDir: "dist",
@@ -22,7 +23,12 @@ export default defineConfig({
         manualChunks: {
           vendor: ["react", "react-dom"],
           router: ["react-router-dom"],
-          ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select"],
+          ui: [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+            "@radix-ui/react-toast",
+          ],
           charts: ["recharts"],
           forms: ["react-hook-form", "@hookform/resolvers", "zod"],
           icons: ["lucide-react"],
@@ -31,6 +37,13 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react-router-dom"],
+    include: [
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "lucide-react",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+    ],
   },
 })
