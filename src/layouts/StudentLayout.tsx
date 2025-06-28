@@ -154,18 +154,7 @@ function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-blue-100 bg-gradient-to-r from-amber-50 to-orange-50">
-        <div className="p-4 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Crown className="h-5 w-5" />
-            <span className="font-bold">Upgrade to PRO</span>
-          </div>
-          <p className="text-xs text-amber-100 mb-3">Unlock premium features and get unlimited access to all courses</p>
-          <Button size="sm" className="w-full bg-white text-orange-600 hover:bg-gray-100 font-semibold">
-            Upgrade Now
-          </Button>
-        </div>
-      </SidebarFooter>
+    
       <SidebarRail />
     </Sidebar>
   )
