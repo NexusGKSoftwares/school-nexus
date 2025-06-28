@@ -50,10 +50,11 @@ export default function Login() {
     if (error) {
       setError(
         error.message || "Failed to sign in. Please check your credentials.",
-      );
+      )
+      setIsLoading(false);
     }
 
-    setIsLoading(false);
+    
   };
 
   const userTypeConfig = {

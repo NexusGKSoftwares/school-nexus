@@ -1,26 +1,16 @@
-/// <reference types="vite/client" />
-
-interface ImportMetaEnv {
-  readonly VITE_SUPABASE_URL: string;
-  readonly VITE_SUPABASE_ANON_KEY: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
-
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
+// Supabase credentials (HARD-CODED)
+const supabaseUrl = "https://uxcdegbnkknmtbbsxhqz.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4Y2RlZ2Jua2tubXRiYnN4aHF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwOTU2MDgsImV4cCI6MjA2NjY3MTYwOH0.sNSxWQY_M_b5nUgo4dDDXG2FLea9VokjglK8rCUfKLQ"
+  
+// Validate credentials
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables");
+  console.error("❌ Supabase credentials are missing!");
+  throw new Error("Missing Supabase URL or Anon Key");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Database types
+// Define database types (extend as needed)
 export type Database = {
   public: {
     Tables: {
@@ -43,16 +33,10 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Update: {
-          id?: string;
-          email?: string;
-          full_name?: string;
-          avatar_url?: string | null;
-          role?: "admin" | "lecturer" | "student";
-          created_at?: string;
-          updated_at?: string;
-        };
+        Update: Partial<Omit<Database["public"]["Tables"]["profiles"]["Row"], "id">>;
       };
+      
+      // Extend other tables as needed
       assignments: { Row: any; Insert: any; Update: any };
       materials: { Row: any; Insert: any; Update: any };
       quizzes: { Row: any; Insert: any; Update: any };
@@ -76,3 +60,6 @@ export type Database = {
     };
   };
 };
+
+// Create the client
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
