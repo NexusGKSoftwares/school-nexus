@@ -213,16 +213,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         onClose={() => setIsFacultyModalOpen(false)}
         onSave={handleSaveFaculty}
         faculty={selectedFaculty}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} mode={'create'}      />
       <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Faculty"
         description={`Are you sure you want to delete ${selectedFaculty?.name || 'this faculty'}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={''}      />
     </AuthContext.Provider>
   )
 } 

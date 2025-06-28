@@ -27,7 +27,7 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: SystemSetting) => void;
-  setting?: SystemSetting | null;
+  settingModal?: SystemSetting | null;
   isLoading?: boolean;
 }
 
@@ -35,7 +35,7 @@ export function SettingsModal({
   isOpen,
   onClose,
   onSave,
-  setting,
+  settingModal,
   isLoading = false
 }: SettingsModalProps) {
   const [formData, setFormData] = useState<SystemSetting>({
@@ -52,8 +52,8 @@ export function SettingsModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (setting) {
-      setFormData(setting);
+    if (settingModal) {
+      setFormData(settingModal);
     } else {
       setFormData({
         setting_key: '',
@@ -67,7 +67,7 @@ export function SettingsModal({
       });
     }
     setErrors({});
-  }, [setting, isOpen]);
+  }, [settingModal, isOpen]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -215,7 +215,7 @@ export function SettingsModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {setting ? 'Edit Setting' : 'Add New Setting'}
+            {settingModal ? 'Edit Setting' : 'Add New Setting'}
           </DialogTitle>
         </DialogHeader>
         
@@ -378,7 +378,7 @@ export function SettingsModal({
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {setting ? 'Update' : 'Create'} Setting
+              {settingModal ? 'Update' : 'Create'} Setting
             </Button>
           </div>
         </form>

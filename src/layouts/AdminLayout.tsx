@@ -47,6 +47,7 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { useAuth } from "../contexts/AuthContext"
 
 // Navigation items for admin
 const navigationItems = [
@@ -238,13 +239,10 @@ function AppSidebar() {
 
 export default function AdminLayout() {
   const navigate = useNavigate()
+  const { profile, signOut } = useAuth()
 
-  // Get user data from localStorage
-  const user = localStorage.getItem("user")
-  const userData = user ? JSON.parse(user) : null
-
-  const handleLogout = () => {
-    localStorage.removeItem("user")
+  const handleLogout = async () => {
+    await signOut()
     navigate("/auth/login")
   }
 
@@ -276,9 +274,9 @@ export default function AdminLayout() {
 
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8 ring-2 ring-purple-200">
-                  <AvatarImage src="/placeholder.svg" alt={userData?.email || "User"} />
+                  <AvatarImage src="/placeholder.svg" alt={profile?.email || "User"} />
                   <AvatarFallback className="bg-purple-100 text-purple-600">
-                    {userData?.email?.charAt(0).toUpperCase() || "U"}
+                    {profile?.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <Button

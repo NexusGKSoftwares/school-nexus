@@ -24,20 +24,7 @@ import { lecturerService, courseService } from "@/lib/dataService"
 import LecturerModal from "@/components/modals/LecturerModal"
 import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal"
 
-interface Lecturer {
-  id: string
-  name: string
-  email: string
-  phone: string
-  department: string
-  position: string
-  experience: string
-  courses: number
-  students: number
-  status: string
-  joinDate: string
-  avatar?: string
-}
+import { Lecturer }  from "@/components/modals/LecturerModal"
 
 export default function AdminLecturers() {
   const [lecturersData, setLecturersData] = useState<Lecturer[]>([])
@@ -110,7 +97,7 @@ export default function AdminLecturers() {
     const matchesSearch =
       lecturer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lecturer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lecturer.id.toLowerCase().includes(searchTerm.toLowerCase())
+      (lecturer.id?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
     const matchesDepartment = selectedDepartment === "All" || lecturer.department === selectedDepartment
     return matchesSearch && matchesDepartment
   })
@@ -371,7 +358,7 @@ export default function AdminLecturers() {
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={lecturer.avatar} alt={lecturer.name} />
                           <AvatarFallback className="bg-purple-100 text-purple-600">
-                            {lecturer.name.split(" ").map((n) => n[0]).join("")}
+                            {lecturer.name.split(" ").map((n: string) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div>
@@ -462,9 +449,8 @@ export default function AdminLecturers() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Lecturer"
-        message={`Are you sure you want to delete ${selectedLecturer?.name}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        description={`Are you sure you want to delete ${selectedLecturer?.name}? This action cannot be undone.`}
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

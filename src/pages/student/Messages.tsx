@@ -22,7 +22,7 @@ interface Conversation {
   time: string
   unread: number
   avatar?: string
-  lecturer_id?: string
+  lecturer_id?: string | null
 }
 
 interface Message {
@@ -76,21 +76,22 @@ export default function Messages() {
         const { data: courses } = await courseService.getCoursesByIds(courseIds)
         
         // Fetch lecturer details
-        const lecturerIds = courses?.map(c => c.lecturer_id).filter(Boolean) || []
+        const lecturerIds = (courses?.map(c => c.lecturer_id).filter((id): id is string => id !== null) || [])
         const { data: lecturers } = await lecturerService.getLecturersByIds(lecturerIds)
 
         if (courses && lecturers) {
           // Create conversations with lecturers
           const transformedConversations: Conversation[] = courses.map((course, index) => {
             const lecturer = lecturers.find(l => l.id === course.lecturer_id)
-            const lecturerName = lecturer ? `${lecturer.first_name} ${lecturer.last_name}` : 'Unknown Lecturer'
-            const initials = lecturer ? `${lecturer.first_name?.[0] || ''}${lecturer.last_name?.[0] || ''}` : 'UL'
+            const profile = lecturer?.profile as any
+            const lecturerName = profile ? `${profile.first_name} ${profile.last_name}` : 'Unknown Lecturer'
+            const initials = profile ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}` : 'UL'
             
             return {
               id: course.id,
               name: lecturerName,
-              role: `${course.name} Professor`,
-              lastMessage: `Course: ${course.name} - ${course.code}`,
+              role: `${course.title} Professor`,
+              lastMessage: `Course: ${course.title} - ${course.code}`,
               time: `${Math.floor(Math.random() * 24)} hours ago`,
               unread: Math.floor(Math.random() * 3),
               lecturer_id: course.lecturer_id,
@@ -450,8 +451,7 @@ export default function Messages() {
         onClose={() => setIsMessageModalOpen(false)}
         onSave={handleSaveMessage}
         message={selectedMessage}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} users={[]} currentUserId={""}      />
 
       <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
@@ -459,8 +459,7 @@ export default function Messages() {
         onConfirm={handleDeleteConfirm}
         title="Delete Message"
         description={`Are you sure you want to delete this message? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

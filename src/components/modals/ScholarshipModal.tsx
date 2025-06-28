@@ -33,6 +33,7 @@ interface ScholarshipModalProps {
   onSave: (data: Scholarship) => void;
   scholarship?: Scholarship | null;
   isLoading?: boolean;
+  students: { id: string; name: string; email: string }[]
 }
 
 export function ScholarshipModal({

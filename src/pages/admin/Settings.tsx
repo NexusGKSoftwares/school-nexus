@@ -137,7 +137,16 @@ export default function AdminSettings() {
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onSave={handleSaveSettings}
-        settings={settings}
+        settingModal={{
+          setting_key: 'system_settings',
+          setting_value: JSON.stringify(settings),
+          setting_type: 'json',
+          category: 'system',
+          description: 'System settings',
+          created_at: new Date().toISOString(),
+          is_public: false,
+          is_required: false
+        }}
         isLoading={isSubmitting}
       />
     </div>

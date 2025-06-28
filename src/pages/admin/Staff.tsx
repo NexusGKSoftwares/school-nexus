@@ -470,16 +470,14 @@ export default function AdminStaff() {
         onClose={() => setIsStaffModalOpen(false)}
         onSave={handleSaveStaff}
         staff={selectedStaff}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} departments={[]} mode={"create"}      />
       <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Staff"
         description={`Are you sure you want to delete ${selectedStaff?.name || 'this staff member'}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

@@ -358,16 +358,14 @@ export default function AdminAnnouncements() {
         onClose={() => setIsAnnouncementModalOpen(false)}
         onSave={handleSaveAnnouncement}
         announcement={selectedAnnouncement}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} currentUserId={""}      />
       <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Announcement"
         description={`Are you sure you want to delete the announcement "${selectedAnnouncement?.title || ''}"? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

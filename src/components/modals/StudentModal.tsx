@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { Student } from "@/pages/admin/Students"
 
 import { useState, useEffect } from "react"
 import { User, Mail, Phone, Calendar, GraduationCap } from "lucide-react"
@@ -10,28 +11,17 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-interface Student {
-  id?: string
-  name: string
-  email: string
-  phone: string
-  department: string
-  year: string
-  gpa: number
-  status: string
-  enrollmentDate: string
-}
-
 interface StudentModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (student: Student) => void
+  onSave: (student: Student) => Promise<void>
   student?: Student | null
   mode: "create" | "edit"
 }
 
 export default function StudentModal({ isOpen, onClose, onSave, student, mode }: StudentModalProps) {
   const [formData, setFormData] = useState<Student>({
+    id: "",
     name: "",
     email: "",
     phone: "",
@@ -49,6 +39,7 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
       setFormData(student)
     } else {
       setFormData({
+        id: "",
         name: "",
         email: "",
         phone: "",

@@ -56,8 +56,15 @@ export default function LecturerProfile() {
       }
 
       if (profile) {
-        setProfileData(profile)
-        setFormData(profile)
+        const [firstName, ...lastNameParts] = profile.full_name.split(' ')
+        const transformedProfile = {
+          ...profile,
+          first_name: firstName,
+          last_name: lastNameParts.join(' '),
+          avatar_url: profile.avatar_url || undefined
+        }
+        setProfileData(transformedProfile)
+        setFormData(transformedProfile)
       }
     } catch (err) {
       setError("Failed to fetch profile data")

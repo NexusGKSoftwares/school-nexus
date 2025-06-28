@@ -16,10 +16,11 @@ interface StaffForm {
 interface StaffModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (staff: StaffForm) => void
-  staff?: StaffForm | null
+  onSave: (data: any) => Promise<void>
+  staff: any
+  isLoading: boolean
   departments: string[]
-  mode: "create" | "edit"
+  mode: 'create' | 'edit'
 }
 
 const initialForm: StaffForm = {
@@ -118,4 +119,4 @@ export default function StaffModal({ isOpen, onClose, onSave, staff, departments
       </DialogContent>
     </Dialog>
   )
-} 
+}

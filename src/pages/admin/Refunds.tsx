@@ -411,8 +411,7 @@ export default function AdminRefunds() {
         onConfirm={handleDeleteConfirm}
         title="Delete Refund"
         description={`Are you sure you want to delete the refund for ${selectedRefund?.studentName || 'this student'}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

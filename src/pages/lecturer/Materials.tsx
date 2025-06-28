@@ -34,6 +34,7 @@ interface Material {
   lecturer_id: string
   status: string
   created_at: string
+  downloads_count: number
   course?: {
     code: string
     name: string
@@ -114,6 +115,7 @@ export default function LecturerMaterials() {
   }
 
   const handleSaveMaterial = async (data: any) => {
+    if (!user) return;
     try {
       setIsSubmitting(true)
       let error
@@ -469,9 +471,8 @@ export default function LecturerMaterials() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Material"
-        message={`Are you sure you want to delete ${selectedMaterial?.title}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        description={`Are you sure you want to delete ${selectedMaterial?.title}? This action cannot be undone.`}
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

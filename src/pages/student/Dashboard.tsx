@@ -46,14 +46,14 @@ export default function StudentDashboard() {
 
       if (studentData) {
         // Get student enrollments
-        const { data: enrollments, error: enrollmentError } = await enrollmentService.getStudentEnrollments(studentData.id)
+        const { data: enrollments, error: enrollmentError } = await enrollmentService.getEnrollmentsByStudent(studentData.id)
         
         if (enrollmentError) {
           console.error("Error fetching enrollments:", enrollmentError)
         }
 
         if (enrollments) {
-          const transformedCourses: Course[] = enrollments.map((enrollment) => ({
+          const transformedCourses: Course[] = enrollments.map((enrollment: { course: { title: string; code: string }; status: string }) => ({
             subject: enrollment.course.title,
             code: enrollment.course.code,
             progress: enrollment.status === 'completed' ? 100 : enrollment.status === 'enrolled' ? 75 : 0,
@@ -62,7 +62,7 @@ export default function StudentDashboard() {
           setCoursesData(transformedCourses)
 
           // Generate mock results based on enrollments
-          const mockResults: Result[] = enrollments.slice(0, 4).map((enrollment) => ({
+          const mockResults: Result[] = enrollments.slice(0, 4).map((enrollment: { course: { title: string } }) => ({
             subject: `${enrollment.course.title} Quiz`,
             score: Math.floor(Math.random() * 30) + 70, // Random score between 70-100
             maxScore: 100,

@@ -425,8 +425,7 @@ export default function AdminTuition() {
         onConfirm={handleDeleteConfirm}
         title="Delete Tuition Fee"
         description={`Are you sure you want to delete the tuition fee for ${selectedTuition?.department || 'this department'}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

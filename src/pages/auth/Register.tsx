@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { supabase } from "@/lib/supabase"
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
@@ -41,26 +42,78 @@ export default function Register() {
     setIsLoading(true)
     setError("")
 
-    // Basic validation
+    // Validate fields
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match")
       setIsLoading(false)
       return
     }
-
     if (!formData.agreeToTerms) {
       setError("Please agree to the terms and conditions")
       setIsLoading(false)
       return
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // Sign up with metadata
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: {
+          full_name: `${formData.firstName} ${formData.lastName}`,
+          role: userType,
+        }
+      }
+    })
 
-    // In a real app, you would make an API call here
-    console.log("Registration data:", { ...formData, userType })
+    if (signUpError) {
+      setError(signUpError.message)
+      setIsLoading(false)
+      return
+    }
 
-    // Redirect to login page
+    // Wait for the trigger to create the profile
+    let profileId = signUpData.user?.id
+    if (!profileId) {
+      setError("Registration failed. Please try again.")
+      setIsLoading(false)
+      return
+    }
+
+    // Insert into students or lecturers if needed
+    if (userType === "student") {
+      const { error: studentError } = await supabase.from("students").insert([
+        {
+          profile_id: profileId,
+          student_number: formData.studentId,
+          faculty_id: formData.department || null,
+          enrollment_date: new Date().toISOString().slice(0, 10),
+          status: "active",
+        },
+      ])
+      if (studentError) {
+        setError(studentError.message)
+        setIsLoading(false)
+        return
+      }
+    } else if (userType === "lecturer") {
+      const { error: lecturerError } = await supabase.from("lecturers").insert([
+        {
+          profile_id: profileId,
+          employee_number: formData.studentId || "-",
+          faculty_id: formData.department || null,
+          hire_date: new Date().toISOString().slice(0, 10),
+          status: "active",
+        },
+      ])
+      if (lecturerError) {
+        setError(lecturerError.message)
+        setIsLoading(false)
+        return
+      }
+    }
+
+    // Success
     navigate("/auth/login")
     setIsLoading(false)
   }

@@ -16,6 +16,7 @@ interface FacultyModalProps {
   onSave: (faculty: FacultyForm) => void
   faculty?: FacultyForm | null
   mode: "create" | "edit"
+  isLoading?: boolean
 }
 
 const initialForm: FacultyForm = {

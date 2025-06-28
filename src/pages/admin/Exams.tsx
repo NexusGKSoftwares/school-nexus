@@ -346,7 +346,7 @@ export default function AdminExams() {
         onClose={() => setIsExamModalOpen(false)}
         onSave={handleSaveExam}
         exam={selectedExam}
-        courses={courseList.filter(c => c !== "All Courses").map(c => ({ id: c, name: c }))}
+        courses={courseList.filter(c => c !== "All Courses").map(c => ({ id: c, name: c, code: c }))}
         isLoading={isSubmitting}
       />
       <DeleteConfirmModal
@@ -355,8 +355,7 @@ export default function AdminExams() {
         onConfirm={handleDeleteConfirm}
         title="Delete Exam"
         description={`Are you sure you want to delete the exam "${selectedExam?.title || ''}"? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

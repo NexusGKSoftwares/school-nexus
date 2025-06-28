@@ -492,8 +492,7 @@ export default function AdminPayments() {
         onConfirm={handleDeleteConfirm}
         title="Delete Payment"
         description={`Are you sure you want to delete the payment for ${selectedPayment?.studentName || 'this student'}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

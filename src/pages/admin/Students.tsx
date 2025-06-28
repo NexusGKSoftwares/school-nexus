@@ -25,7 +25,7 @@ import type { Student as StudentType } from "@/lib/dataService"
 import StudentModal from "@/components/modals/StudentModal"
 import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal"
 
-interface Student {
+export interface Student {
   id: string
   name: string
   email: string
@@ -470,9 +470,8 @@ export default function AdminStudents() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Student"
-        message={`Are you sure you want to delete ${selectedStudent?.name}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        description={`Are you sure you want to delete ${selectedStudent?.name}? This action cannot be undone.`}
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

@@ -24,6 +24,8 @@ interface Quiz {
   status: string
   due_date: string
   created_at: string
+  attempts_count?: number
+  average_score?: number
   course?: {
     code: string
     name: string
@@ -496,8 +498,7 @@ export default function LecturerQuizzes() {
         onConfirm={handleDeleteConfirm}
         title="Delete Quiz"
         description={`Are you sure you want to delete the quiz "${selectedQuiz?.title || 'this quiz'}"? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

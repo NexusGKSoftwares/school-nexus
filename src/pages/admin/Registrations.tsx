@@ -81,8 +81,8 @@ export default function AdminRegistrations() {
       if (studentsData) {
         const transformedStudents = studentsData.map(student => ({
           id: student.id,
-          name: `${student.first_name} ${student.last_name}`,
-          email: student.email
+          name: `Student ${student.student_number}`, // Temporary name based on student number
+          email: `student-${student.student_number}@example.com` // Temporary email
         }))
         setStudents(transformedStudents)
       }
@@ -91,7 +91,7 @@ export default function AdminRegistrations() {
       if (coursesData) {
         const transformedCourses = coursesData.map(course => ({
           id: course.id,
-          name: course.name,
+          name: course.title,
           code: course.code
         }))
         setCourses(transformedCourses)
@@ -104,10 +104,10 @@ export default function AdminRegistrations() {
           
           return {
             id: reg.id,
-            studentName: student ? `${student.first_name} ${student.last_name}` : "Unknown Student",
-            studentId: student?.student_id || "N/A",
-            email: student?.email || "N/A",
-            course: course?.name || "Unknown Course",
+            studentName: student ? `Student ${student.student_number}` : "Unknown Student",
+            studentId: student?.student_number || "N/A",
+            email: `student-${student?.student_number}@example.com` || "N/A",
+            course: course?.title || "Unknown Course",
             courseCode: course?.code || "N/A",
             semester: reg.semester || "Current",
             credits: course?.credits || 0,
@@ -115,7 +115,7 @@ export default function AdminRegistrations() {
             status: reg.status,
             priority: reg.priority || "Medium",
             reason: reg.reason || "Course registration",
-            avatar: student?.avatar_url || "/placeholder.svg?height=40&width=40",
+            avatar: "/placeholder.svg?height=40&width=40",
           }
         })
         setRegistrationData(transformedRegistrations)
@@ -544,8 +544,7 @@ export default function AdminRegistrations() {
         onConfirm={handleDeleteConfirm}
         title="Delete Registration"
         description={`Are you sure you want to delete the registration for ${selectedRegistration?.studentName || 'this student'}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

@@ -400,8 +400,7 @@ export default function AdminScholarships() {
         onConfirm={handleDeleteConfirm}
         title="Delete Scholarship"
         description={`Are you sure you want to delete the scholarship for ${selectedScholarship?.studentName || 'this student'}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

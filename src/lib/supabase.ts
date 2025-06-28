@@ -1,3 +1,14 @@
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string
+  readonly VITE_SUPABASE_ANON_KEY: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -10,7 +21,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Database types
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: {
@@ -42,257 +53,26 @@ export interface Database {
           updated_at?: string
         }
       }
-      faculties: {
-        Row: {
-          id: string
-          name: string
-          code: string
-          description: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          code: string
-          description?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          code?: string
-          description?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      courses: {
-        Row: {
-          id: string
-          title: string
-          code: string
-          description: string | null
-          credits: number
-          faculty_id: string
-          lecturer_id: string | null
-          semester: number
-          academic_year: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          code: string
-          description?: string | null
-          credits: number
-          faculty_id: string
-          lecturer_id?: string | null
-          semester: number
-          academic_year: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          code?: string
-          description?: string | null
-          credits?: number
-          faculty_id?: string
-          lecturer_id?: string | null
-          semester?: number
-          academic_year?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      students: {
-        Row: {
-          id: string
-          profile_id: string
-          student_number: string
-          faculty_id: string
-          enrollment_date: string
-          graduation_date: string | null
-          status: 'active' | 'graduated' | 'suspended' | 'withdrawn'
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          profile_id: string
-          student_number: string
-          faculty_id: string
-          enrollment_date: string
-          graduation_date?: string | null
-          status?: 'active' | 'graduated' | 'suspended' | 'withdrawn'
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          profile_id?: string
-          student_number?: string
-          faculty_id?: string
-          enrollment_date?: string
-          graduation_date?: string | null
-          status?: 'active' | 'graduated' | 'suspended' | 'withdrawn'
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      lecturers: {
-        Row: {
-          id: string
-          profile_id: string
-          employee_number: string
-          faculty_id: string
-          hire_date: string
-          specialization: string | null
-          status: 'active' | 'inactive' | 'on_leave'
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          profile_id: string
-          employee_number: string
-          faculty_id: string
-          hire_date: string
-          specialization?: string | null
-          status?: 'active' | 'inactive' | 'on_leave'
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          profile_id?: string
-          employee_number?: string
-          faculty_id?: string
-          hire_date?: string
-          specialization?: string | null
-          status?: 'active' | 'inactive' | 'on_leave'
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      enrollments: {
-        Row: {
-          id: string
-          student_id: string
-          course_id: string
-          enrollment_date: string
-          status: 'enrolled' | 'completed' | 'dropped' | 'failed'
-          grade: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          student_id: string
-          course_id: string
-          enrollment_date: string
-          status?: 'enrolled' | 'completed' | 'dropped' | 'failed'
-          grade?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          student_id?: string
-          course_id?: string
-          enrollment_date?: string
-          status?: 'enrolled' | 'completed' | 'dropped' | 'failed'
-          grade?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      announcements: {
-        Row: {
-          id: string
-          title: string
-          content: string
-          author_id: string
-          target_audience: 'all' | 'students' | 'lecturers' | 'admins'
-          is_published: boolean
-          published_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          content: string
-          author_id: string
-          target_audience?: 'all' | 'students' | 'lecturers' | 'admins'
-          is_published?: boolean
-          published_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          content?: string
-          author_id?: string
-          target_audience?: 'all' | 'students' | 'lecturers' | 'admins'
-          is_published?: boolean
-          published_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      payments: {
-        Row: {
-          id: string
-          student_id: string
-          amount: number
-          payment_type: 'tuition' | 'library_fine' | 'other'
-          status: 'pending' | 'completed' | 'failed' | 'refunded'
-          payment_date: string | null
-          due_date: string
-          description: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          student_id: string
-          amount: number
-          payment_type?: 'tuition' | 'library_fine' | 'other'
-          status?: 'pending' | 'completed' | 'failed' | 'refunded'
-          payment_date?: string | null
-          due_date: string
-          description?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          student_id?: string
-          amount?: number
-          payment_type?: 'tuition' | 'library_fine' | 'other'
-          status?: 'pending' | 'completed' | 'failed' | 'refunded'
-          payment_date?: string | null
-          due_date?: string
-          description?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
+      assignments: { Row: any; Insert: any; Update: any }
+      materials: { Row: any; Insert: any; Update: any }
+      quizzes: { Row: any; Insert: any; Update: any }
+      grades: { Row: any; Insert: any; Update: any }
+      attendance: { Row: any; Insert: any; Update: any }
+      support_tickets: { Row: any; Insert: any; Update: any }
+      scholarships: { Row: any; Insert: any; Update: any }
+      refunds: { Row: any; Insert: any; Update: any }
+      tuition_fees: { Row: any; Insert: any; Update: any }
+      exams: { Row: any; Insert: any; Update: any }
+      registrations: { Row: any; Insert: any; Update: any }
+      staff: { Row: any; Insert: any; Update: any }
+      calendar_events: { Row: any; Insert: any; Update: any }
+      faculties: { Row: any; Insert: any; Update: any }
+      students: { Row: any; Insert: any; Update: any }
+      lecturers: { Row: any; Insert: any; Update: any }
+      courses: { Row: any; Insert: any; Update: any }
+      enrollments: { Row: any; Insert: any; Update: any }
+      announcements: { Row: any; Insert: any; Update: any }
+      payments: { Row: any; Insert: any; Update: any }
     }
   }
-} 
+}

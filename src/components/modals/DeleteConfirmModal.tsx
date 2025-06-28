@@ -11,6 +11,7 @@ interface DeleteConfirmModalProps {
   title: string
   description: string
   itemName: string
+  isLoading?: boolean
 }
 
 export default function DeleteConfirmModal({

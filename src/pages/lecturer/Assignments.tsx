@@ -458,9 +458,8 @@ export default function LecturerAssignments() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Assignment"
-        message={`Are you sure you want to delete ${selectedAssignment?.title}? This action cannot be undone.`}
-        isLoading={isSubmitting}
-      />
+        description={`Are you sure you want to delete ${selectedAssignment?.title}? This action cannot be undone.`}
+        isLoading={isSubmitting} itemName={""}      />
     </div>
   )
 }

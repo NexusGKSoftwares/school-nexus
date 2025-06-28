@@ -39,6 +39,7 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { useAuth } from "../contexts/AuthContext"
 
 // Navigation items for lecturer
 const navigationItems = [
@@ -162,13 +163,10 @@ function AppSidebar() {
 
 export default function LecturerLayout() {
   const navigate = useNavigate()
+  const { profile, signOut } = useAuth()
 
-  // Get user data from localStorage
-  const user = localStorage.getItem("user")
-  const userData = user ? JSON.parse(user) : null
-
-  const handleLogout = () => {
-    localStorage.removeItem("user")
+  const handleLogout = async () => {
+    await signOut()
     navigate("/auth/login")
   }
 
@@ -205,9 +203,9 @@ export default function LecturerLayout() {
 
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8 ring-2 ring-blue-200">
-                  <AvatarImage src="/placeholder.svg" alt={userData?.email || "User"} />
+                  <AvatarImage src="/placeholder.svg" alt={profile?.email || "User"} />
                   <AvatarFallback className="bg-blue-100 text-blue-600">
-                    {userData?.email?.charAt(0).toUpperCase() || "U"}
+                    {profile?.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <Button variant="ghost" size="icon" className="text-blue-600 hover:bg-blue-50" onClick={handleLogout}>

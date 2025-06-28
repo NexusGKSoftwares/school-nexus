@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 
-interface Lecturer {
+export interface Lecturer {
   id?: string
   name: string
   email: string
@@ -25,12 +25,13 @@ interface Lecturer {
   joinDate: string
   specialization?: string
   bio?: string
+  avatar?: string
 }
 
 interface LecturerModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (lecturer: Lecturer) => void
+  onSave: (lecturer: Lecturer) => Promise<void>
   lecturer?: Lecturer | null
   mode: "create" | "edit"
 }
