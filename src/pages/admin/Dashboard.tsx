@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import {
   Users,
   GraduationCap,
@@ -17,114 +18,117 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useAuth } from "../../contexts/AuthContext"
+import { studentService, lecturerService, courseService, paymentService, announcementService } from "../../lib/dataService"
 
-const adminData = {
-  name: "Dr. Michael Chen",
-  role: "System Administrator",
+interface DashboardStats {
+  totalStudents: number
+  activeLecturers: number
+  totalCourses: number
+  outstandingFees: number
+  totalAnnouncements: number
 }
 
-const quickStats = {
-  totalStudents: 2847,
-  activeLecturers: 156,
-  totalCourses: 89,
-  outstandingFees: 125000,
-}
-
-const recentActivity = [
-  {
-    id: 1,
-    type: "registration",
-    user: "Sarah Johnson",
-    action: "New student registration",
-    time: "2 minutes ago",
-    status: "pending",
-  },
-  {
-    id: 2,
-    type: "payment",
-    user: "Michael Brown",
-    action: "Tuition payment received",
-    time: "15 minutes ago",
-    status: "completed",
-  },
-  {
-    id: 3,
-    type: "grade",
-    user: "Dr. Smith",
-    action: "Submitted grades for CS 301",
-    time: "1 hour ago",
-    status: "completed",
-  },
-  {
-    id: 4,
-    type: "upload",
-    user: "Prof. Davis",
-    action: "Uploaded course materials",
-    time: "2 hours ago",
-    status: "completed",
-  },
-  {
-    id: 5,
-    type: "registration",
-    user: "Emily Wilson",
-    action: "Course registration request",
-    time: "3 hours ago",
-    status: "pending",
-  },
-]
-
-const systemAlerts = [
-  {
-    id: 1,
-    title: "Server Maintenance Scheduled",
-    message: "System maintenance scheduled for this weekend",
-    type: "info",
-    time: "1 hour ago",
-  },
-  {
-    id: 2,
-    title: "Payment Gateway Issue",
-    message: "Some payment transactions are failing",
-    type: "warning",
-    time: "2 hours ago",
-  },
-  {
-    id: 3,
-    title: "New Feature Released",
-    message: "Mobile app version 2.1 is now available",
-    type: "success",
-    time: "1 day ago",
-  },
-]
-
-const getActivityIcon = (type: string) => {
-  switch (type) {
-    case "registration":
-      return <UserPlus className="h-4 w-4 text-blue-600" />
-    case "payment":
-      return <DollarSign className="h-4 w-4 text-green-600" />
-    case "grade":
-      return <FileText className="h-4 w-4 text-purple-600" />
-    case "upload":
-      return <BookOpen className="h-4 w-4 text-orange-600" />
-    default:
-      return <Activity className="h-4 w-4 text-gray-600" />
-  }
-}
-
-const getAlertIcon = (type: string) => {
-  switch (type) {
-    case "success":
-      return <CheckCircle className="h-5 w-5 text-green-600" />
-    case "warning":
-      return <AlertTriangle className="h-5 w-5 text-orange-600" />
-    case "info":
-    default:
-      return <Clock className="h-5 w-5 text-blue-600" />
-  }
+interface RecentActivity {
+  id: string
+  type: string
+  user: string
+  action: string
+  time: string
+  status: string
 }
 
 export default function AdminDashboard() {
+  const { profile } = useAuth()
+  const [stats, setStats] = useState<DashboardStats>({
+    totalStudents: 0,
+    activeLecturers: 0,
+    totalCourses: 0,
+    outstandingFees: 0,
+    totalAnnouncements: 0,
+  })
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch all data in parallel
+        const [studentsRes, lecturersRes, coursesRes, paymentsRes, announcementsRes] = await Promise.all([
+          studentService.getStudents(),
+          lecturerService.getLecturers(),
+          courseService.getCourses(),
+          paymentService.getPayments(),
+          announcementService.getAnnouncements(),
+        ])
+
+        // Calculate stats
+        const totalStudents = studentsRes.data?.length || 0
+        const activeLecturers = lecturersRes.data?.filter(l => l.status === 'active').length || 0
+        const totalCourses = coursesRes.data?.length || 0
+        const outstandingFees = paymentsRes.data
+          ?.filter(p => p.status === 'pending')
+          .reduce((sum, p) => sum + Number(p.amount), 0) || 0
+        const totalAnnouncements = announcementsRes.data?.length || 0
+
+        setStats({
+          totalStudents,
+          activeLecturers,
+          totalCourses,
+          outstandingFees,
+          totalAnnouncements,
+        })
+
+        // Generate recent activity from the data
+        const activity: RecentActivity[] = []
+        
+        // Add recent student registrations
+        studentsRes.data?.slice(0, 3).forEach(student => {
+          activity.push({
+            id: student.id,
+            type: 'registration',
+            user: student.profile.full_name,
+            action: 'New student registration',
+            time: new Date(student.created_at).toLocaleDateString(),
+            status: 'completed',
+          })
+        })
+
+        // Add recent payments
+        paymentsRes.data?.slice(0, 2).forEach(payment => {
+          activity.push({
+            id: payment.id,
+            type: 'payment',
+            user: payment.student.profile.full_name,
+            action: `Payment ${payment.status === 'completed' ? 'received' : 'pending'}`,
+            time: new Date(payment.created_at).toLocaleDateString(),
+            status: payment.status,
+          })
+        })
+
+        // Add recent announcements
+        announcementsRes.data?.slice(0, 2).forEach(announcement => {
+          activity.push({
+            id: announcement.id,
+            type: 'announcement',
+            user: announcement.author.full_name,
+            action: 'Created announcement',
+            time: new Date(announcement.created_at).toLocaleDateString(),
+            status: announcement.is_published ? 'published' : 'draft',
+          })
+        })
+
+        setRecentActivity(activity.slice(0, 5))
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDashboardData()
+  }, [])
+
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -132,14 +136,35 @@ export default function AdminDashboard() {
     day: "numeric",
   })
 
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "registration":
+        return <UserPlus className="h-4 w-4 text-blue-600" />
+      case "payment":
+        return <DollarSign className="h-4 w-4 text-green-600" />
+      case "announcement":
+        return <FileText className="h-4 w-4 text-purple-600" />
+      default:
+        return <Activity className="h-4 w-4 text-gray-600" />
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
       {/* Welcome Section */}
       <Card className="overflow-hidden bg-gradient-to-r from-purple-500 via-violet-600 to-indigo-600 text-white shadow-xl border-0">
         <CardContent className="p-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Welcome back, {adminData.name}! 👨‍💼</h1>
-            <p className="text-purple-100 text-lg">{adminData.role}</p>
+            <h1 className="text-3xl font-bold">Welcome back, {profile?.full_name}! 👨‍💼</h1>
+            <p className="text-purple-100 text-lg">System Administrator</p>
             <p className="text-purple-200">{currentDate}</p>
           </div>
         </CardContent>
@@ -154,7 +179,7 @@ export default function AdminDashboard() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{quickStats.totalStudents.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-gray-800">{stats.totalStudents.toLocaleString()}</div>
                 <div className="text-sm text-gray-600">Total Students</div>
               </div>
             </div>
@@ -168,7 +193,7 @@ export default function AdminDashboard() {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{quickStats.activeLecturers}</div>
+                <div className="text-2xl font-bold text-gray-800">{stats.activeLecturers}</div>
                 <div className="text-sm text-gray-600">Active Lecturers</div>
               </div>
             </div>
@@ -182,7 +207,7 @@ export default function AdminDashboard() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{quickStats.totalCourses}</div>
+                <div className="text-2xl font-bold text-gray-800">{stats.totalCourses}</div>
                 <div className="text-sm text-gray-600">Total Courses</div>
               </div>
             </div>
@@ -196,7 +221,7 @@ export default function AdminDashboard() {
                 <DollarSign className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">${quickStats.outstandingFees.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-gray-800">${stats.outstandingFees.toLocaleString()}</div>
                 <div className="text-sm text-gray-600">Outstanding Fees</div>
               </div>
             </div>
@@ -204,113 +229,77 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Key Actions */}
-      <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-800">
-            <TrendingUp className="h-5 w-5 text-purple-600" />
-            Key Actions
-          </CardTitle>
-          <CardDescription>Quick access to important administrative tasks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Button className="h-auto p-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white">
-              <div className="flex flex-col items-center gap-2">
-                <UserPlus className="h-6 w-6" />
-                <span className="font-medium">Add New Student</span>
-              </div>
-            </Button>
-            <Button className="h-auto p-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white">
-              <div className="flex flex-col items-center gap-2">
-                <BookPlus className="h-6 w-6" />
-                <span className="font-medium">Create New Course</span>
-              </div>
-            </Button>
-            <Button className="h-auto p-4 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white">
-              <div className="flex flex-col items-center gap-2">
-                <CreditCard className="h-6 w-6" />
-                <span className="font-medium">Approve Payments</span>
-              </div>
-            </Button>
-            <Button className="h-auto p-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white">
-              <div className="flex flex-col items-center gap-2">
-                <FileText className="h-6 w-6" />
-                <span className="font-medium">Generate Report</span>
-              </div>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Activity Log */}
-        <Card className="lg:col-span-2 bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+      {/* Recent Activity and Quick Actions */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Activity */}
+        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-800">
+            <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-blue-600" />
-              Recent Activity Log
+              Recent Activity
             </CardTitle>
-            <CardDescription>Latest system activities and user actions</CardDescription>
+            <CardDescription>Latest system activities and updates</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentActivity.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-gray-100">{getActivityIcon(activity.type)}</div>
-                        <span className="font-medium">{activity.user}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{activity.action}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{activity.time}</TableCell>
-                    <TableCell>
+            <div className="space-y-4">
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                    {getActivityIcon(activity.type)}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{activity.user}</p>
+                      <p className="text-xs text-gray-600">{activity.action}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500">{activity.time}</p>
                       <Badge
-                        variant={activity.status === "completed" ? "default" : "secondary"}
-                        className={activity.status === "completed" ? "bg-green-500" : "bg-orange-500"}
+                        variant={activity.status === "completed" || activity.status === "published" ? "default" : "secondary"}
+                        className="text-xs"
                       >
                         {activity.status}
                       </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">No recent activity</p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
-        {/* System Alerts */}
+        {/* Quick Actions */}
         <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-800">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              System Alerts
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              Quick Actions
             </CardTitle>
-            <CardDescription>Important system notifications</CardDescription>
+            <CardDescription>Common administrative tasks</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {systemAlerts.map((alert) => (
-              <div key={alert.id} className="p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-1">{getAlertIcon(alert.type)}</div>
-                  <div className="flex-1 space-y-1">
-                    <h4 className="font-medium text-gray-800">{alert.title}</h4>
-                    <p className="text-sm text-gray-600">{alert.message}</p>
-                    <span className="text-xs text-gray-500">{alert.time}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <CardContent>
+            <div className="grid gap-3">
+              <Button className="justify-start" variant="outline">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add New Student
+              </Button>
+              <Button className="justify-start" variant="outline">
+                <GraduationCap className="mr-2 h-4 w-4" />
+                Add New Lecturer
+              </Button>
+              <Button className="justify-start" variant="outline">
+                <BookPlus className="mr-2 h-4 w-4" />
+                Create Course
+              </Button>
+              <Button className="justify-start" variant="outline">
+                <FileText className="mr-2 h-4 w-4" />
+                Post Announcement
+              </Button>
+              <Button className="justify-start" variant="outline">
+                <CreditCard className="mr-2 h-4 w-4" />
+                View Payments
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

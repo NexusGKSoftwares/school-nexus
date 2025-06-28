@@ -1,47 +1,105 @@
-import { BookOpen, TrendingUp, FileText, AlertTriangle, Play, Eye, UserPlus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { BookOpen, TrendingUp, FileText, AlertTriangle, Play, Eye, UserPlus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { useAuth } from "../../contexts/AuthContext"
+import { studentService, enrollmentService } from "../../lib/dataService"
 
-const studentData = {
-  name: "Haleema",
+interface Course {
+  subject: string
+  code: string
+  progress: number
+  status: string
 }
 
-const coursesData = [
-  {
-    subject: "Mathematics",
-    code: "MATH 101",
-    progress: 85,
-    status: "enrolled",
-  },
-  {
-    subject: "Computer Science",
-    code: "CS 201",
-    progress: 92,
-    status: "enrolled",
-  },
-  {
-    subject: "Physics",
-    code: "PHY 101",
-    progress: 78,
-    status: "enrolled",
-  },
-  {
-    subject: "English Literature",
-    code: "ENG 102",
-    progress: 0,
-    status: "available",
-  },
-]
-
-const recentResults = [
-  { subject: "Math Quiz", score: 85, maxScore: 100 },
-  { subject: "CS Assignment", score: 92, maxScore: 100 },
-  { subject: "Physics Lab", score: 78, maxScore: 100 },
-  { subject: "English Essay", score: 88, maxScore: 100 },
-]
+interface Result {
+  subject: string
+  score: number
+  maxScore: number
+}
 
 export default function StudentDashboard() {
+  const { profile } = useAuth()
+  const [coursesData, setCoursesData] = useState<Course[]>([])
+  const [recentResults, setRecentResults] = useState<Result[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchStudentData()
+  }, [profile])
+
+  const fetchStudentData = async () => {
+    if (!profile) return
+
+    try {
+      setLoading(true)
+      
+      // Get student record
+      const { data: studentData, error: studentError } = await studentService.getStudentByProfile(profile.id)
+      
+      if (studentError) {
+        setError(studentError.message)
+        return
+      }
+
+      if (studentData) {
+        // Get student enrollments
+        const { data: enrollments, error: enrollmentError } = await enrollmentService.getStudentEnrollments(studentData.id)
+        
+        if (enrollmentError) {
+          console.error("Error fetching enrollments:", enrollmentError)
+        }
+
+        if (enrollments) {
+          const transformedCourses: Course[] = enrollments.map((enrollment) => ({
+            subject: enrollment.course.title,
+            code: enrollment.course.code,
+            progress: enrollment.status === 'completed' ? 100 : enrollment.status === 'enrolled' ? 75 : 0,
+            status: enrollment.status === 'enrolled' ? 'enrolled' : 'available',
+          }))
+          setCoursesData(transformedCourses)
+
+          // Generate mock results based on enrollments
+          const mockResults: Result[] = enrollments.slice(0, 4).map((enrollment) => ({
+            subject: `${enrollment.course.title} Quiz`,
+            score: Math.floor(Math.random() * 30) + 70, // Random score between 70-100
+            maxScore: 100,
+          }))
+          setRecentResults(mockResults)
+        }
+      }
+    } catch (err) {
+      setError("Failed to fetch student data")
+      console.error("Error fetching student data:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading your dashboard...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchStudentData}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
       {/* Welcome Section */}
@@ -49,7 +107,7 @@ export default function StudentDashboard() {
         <CardContent className="p-0">
           <div className="flex items-center justify-between p-8">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold">Hello {studentData.name}! 👋</h1>
+              <h1 className="text-3xl font-bold">Hello {profile?.full_name}! 👋</h1>
               <p className="text-blue-100 text-lg">Ready to continue your learning journey?</p>
               <Button className="mt-4 bg-white text-blue-600 hover:bg-blue-50 font-semibold">
                 <Play className="h-4 w-4 mr-2" />
@@ -78,39 +136,50 @@ export default function StudentDashboard() {
             <CardDescription>Track your progress and continue learning</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {coursesData.map((course, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100"
-              >
-                <div className="space-y-2">
-                  <div className="font-semibold text-gray-800">{course.subject}</div>
-                  <div className="text-sm text-blue-600 font-medium">{course.code}</div>
-                  {course.status === "enrolled" && (
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-gray-600">
-                        <span>Progress</span>
-                        <span>{course.progress}%</span>
-                      </div>
-                      <Progress value={course.progress} className="h-2 bg-blue-100" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {course.status === "enrolled" ? (
-                    <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
-                      <UserPlus className="h-4 w-4 mr-1" />
-                      Enroll
-                    </Button>
-                  )}
-                </div>
+            {coursesData.length === 0 ? (
+              <div className="text-center py-8">
+                <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No courses enrolled yet.</p>
+                <Button className="mt-4" variant="outline">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Browse Courses
+                </Button>
               </div>
-            ))}
+            ) : (
+              coursesData.map((course, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100"
+                >
+                  <div className="space-y-2">
+                    <div className="font-semibold text-gray-800">{course.subject}</div>
+                    <div className="text-sm text-blue-600 font-medium">{course.code}</div>
+                    {course.status === "enrolled" && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs text-gray-600">
+                          <span>Progress</span>
+                          <span>{course.progress}%</span>
+                        </div>
+                        <Progress value={course.progress} className="h-2 bg-blue-100" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    {course.status === "enrolled" ? (
+                      <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        Enroll
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
@@ -124,20 +193,27 @@ export default function StudentDashboard() {
             <CardDescription>Your latest quiz and assignment scores</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentResults.map((result, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-gray-700">{result.subject}</span>
-                  <span className="font-bold text-blue-600">{result.score}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${result.score}%` }}
-                  />
-                </div>
+            {recentResults.length === 0 ? (
+              <div className="text-center py-4">
+                <TrendingUp className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">No recent results</p>
               </div>
-            ))}
+            ) : (
+              recentResults.map((result, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-700">{result.subject}</span>
+                    <span className="font-bold text-blue-600">{result.score}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${result.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Megaphone, Search, Filter, Plus, Edit, Trash2, Eye } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Megaphone, Search, Filter, Plus, Edit, Trash2, Eye, Loader2 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -17,79 +17,101 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { announcementService } from "@/lib/dataService"
+import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
-const announcementsData = [
-  {
-    id: "ANN001",
-    title: "Fall Semester Begins",
-    author: "Dr. Sarah Mitchell",
-    date: "2024-09-02",
-    department: "All Departments",
-    priority: "High",
-    status: "Published",
-    content: "Welcome to the Fall 2024 semester! Classes begin on September 2nd. Please check your course schedules.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "ANN002",
-    title: "Registration Deadline Extended",
-    author: "Jennifer Adams",
-    date: "2024-09-15",
-    department: "All Departments",
-    priority: "Medium",
-    status: "Published",
-    content:
-      "The registration deadline has been extended to September 15th. Make sure to register for your courses before the deadline.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "ANN003",
-    title: "Midterm Exam Schedule",
-    author: "Dr. Sarah Mitchell",
-    date: "2024-10-15",
-    department: "Computer Science",
-    priority: "High",
-    status: "Published",
-    content:
-      "The midterm exam schedule for Computer Science courses is now available. Please check the schedule and prepare accordingly.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "ANN004",
-    title: "New Scholarship Opportunity",
-    author: "Robert Martinez",
-    date: "2024-11-01",
-    department: "All Departments",
-    priority: "Medium",
-    status: "Published",
-    content:
-      "A new scholarship opportunity is available for eligible students. Please visit the scholarship office for more information.",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "ANN005",
-    title: "Thanksgiving Break",
-    author: "Dr. Lisa Anderson",
-    date: "2024-11-25",
-    department: "All Departments",
-    priority: "High",
-    status: "Published",
-    content:
-      "The university will be closed for Thanksgiving break from November 25th to November 29th. Have a happy Thanksgiving!",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-]
+interface Announcement {
+  id: string
+  title: string
+  content: string
+  author_id: string
+  department: string
+  priority: string
+  status: string
+  created_at: string
+  author?: {
+    first_name: string
+    last_name: string
+    email: string
+  }
+}
 
-const departmentList = ["All Departments", "Computer Science", "Mathematics", "Physics", "Engineering", "Biology"]
-
-export default function AdminAnnouncements() {
+export default function LecturerAnnouncements() {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState("All Departments")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const filteredAnnouncements = announcementsData.filter((announcement) => {
+  useEffect(() => {
+    if (user) {
+      fetchData()
+    }
+  }, [user])
+
+  const fetchData = async () => {
+    if (!user) return
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Fetch announcements
+      const { data: announcementsData, error: announcementsError } = await announcementService.getAnnouncements()
+      
+      if (announcementsError) {
+        setError(announcementsError.message)
+        return
+      }
+
+      if (announcementsData) {
+        setAnnouncements(announcementsData)
+      }
+    } catch (err) {
+      setError("Failed to fetch announcements data")
+      console.error("Error fetching announcements data:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteAnnouncement = async (announcementId: string) => {
+    try {
+      const { error } = await announcementService.deleteAnnouncement(announcementId)
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Success",
+        description: "Announcement deleted successfully",
+      })
+
+      // Refresh the data
+      fetchData()
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to delete announcement",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const filteredAnnouncements = announcements.filter((announcement) => {
+    const authorName = announcement.author ? `${announcement.author.first_name} ${announcement.author.last_name}` : 'Unknown'
     const matchesSearch =
       announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      announcement.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      authorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       announcement.content.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesDepartment = selectedDepartment === "All Departments" || announcement.department === selectedDepartment
     return matchesSearch && matchesDepartment
@@ -97,15 +119,42 @@ export default function AdminAnnouncements() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "High":
+      case "high":
         return "bg-red-500"
-      case "Medium":
+      case "medium":
         return "bg-orange-500"
-      case "Low":
+      case "low":
         return "bg-green-500"
       default:
         return "bg-gray-500"
     }
+  }
+
+  const getDepartments = () => {
+    const departments = new Set(announcements.map(a => a.department))
+    return ["All Departments", ...Array.from(departments)]
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading announcements...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchData}>Retry</Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -145,7 +194,7 @@ export default function AdminAnnouncements() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Filter by Department</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {departmentList.map((dept) => (
+            {getDepartments().map((dept) => (
               <DropdownMenuItem key={dept} onClick={() => setSelectedDepartment(dept)}>
                 {dept}
               </DropdownMenuItem>
@@ -164,70 +213,79 @@ export default function AdminAnnouncements() {
           <CardDescription>Manage and view all system announcements</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Author</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAnnouncements.map((announcement) => (
-                <TableRow key={announcement.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium text-gray-900">{announcement.title}</div>
-                      <div className="text-sm text-gray-600">{announcement.content.substring(0, 50)}...</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={announcement.avatar || "/placeholder.svg"} alt={announcement.author} />
-                        <AvatarFallback className="bg-purple-100 text-purple-600">
-                          {announcement.author.split(" ").map((n) => n[0])}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{announcement.author}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{new Date(announcement.date).toLocaleDateString()}</TableCell>
-                  <TableCell>{announcement.department}</TableCell>
-                  <TableCell>
-                    <Badge className={getPriorityColor(announcement.priority)}>{announcement.priority}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className="bg-green-500">{announcement.status}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="text-red-600">Delete Announcement</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </TableCell>
+          {filteredAnnouncements.length === 0 ? (
+            <div className="text-center py-8">
+              <Megaphone className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No announcements found.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Author</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredAnnouncements.map((announcement) => (
+                  <TableRow key={announcement.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium text-gray-900">{announcement.title}</div>
+                        <div className="text-sm text-gray-600">{announcement.content.substring(0, 50)}...</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src="/placeholder.svg" alt={announcement.author?.first_name || 'Unknown'} />
+                          <AvatarFallback className="bg-purple-100 text-purple-600">
+                            {announcement.author ? `${announcement.author.first_name[0]}${announcement.author.last_name[0]}` : 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{announcement.author ? `${announcement.author.first_name} ${announcement.author.last_name}` : 'Unknown'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{new Date(announcement.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>{announcement.department}</TableCell>
+                    <TableCell>
+                      <Badge className={getPriorityColor(announcement.priority)}>
+                        {announcement.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={announcement.status === "published" ? "default" : "secondary"}>
+                        {announcement.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                          onClick={() => handleDeleteAnnouncement(announcement.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

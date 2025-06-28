@@ -1,7 +1,7 @@
 "use client"
 
-import { Upload, File, Video, ImageIcon, FileText, Download, Eye, Trash2, Plus, Search, Filter } from "lucide-react"
-import { useState } from "react"
+import { Upload, File, Video, ImageIcon, FileText, Download, Eye, Trash2, Plus, Search, Filter, Loader2, Edit } from "lucide-react"
+import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,90 +15,236 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { materialService, courseService } from "@/lib/dataService"
+import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
-const materialsData = [
-  {
-    id: 1,
-    name: "Introduction to Data Structures.pdf",
-    type: "PDF",
-    course: "CS 301",
-    size: "2.5 MB",
-    uploadDate: "2024-01-15",
-    downloads: 45,
-    status: "Published",
-  },
-  {
-    id: 2,
-    name: "Binary Trees Lecture Video.mp4",
-    type: "Video",
-    course: "CS 301",
-    size: "125 MB",
-    uploadDate: "2024-01-14",
-    downloads: 38,
-    status: "Published",
-  },
-  {
-    id: 3,
-    name: "Database Design Slides.pptx",
-    type: "Presentation",
-    course: "CS 401",
-    size: "8.2 MB",
-    uploadDate: "2024-01-13",
-    downloads: 32,
-    status: "Published",
-  },
-  {
-    id: 4,
-    name: "SQL Practice Exercises.docx",
-    type: "Document",
-    course: "CS 401",
-    size: "1.8 MB",
-    uploadDate: "2024-01-12",
-    downloads: 28,
-    status: "Draft",
-  },
-  {
-    id: 5,
-    name: "Software Engineering Principles.pdf",
-    type: "PDF",
-    course: "CS 402",
-    size: "3.1 MB",
-    uploadDate: "2024-01-11",
-    downloads: 41,
-    status: "Published",
-  },
-]
+// Import modals
+import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal"
+import MaterialModal from "@/components/modals/MaterialModal"
 
-const courseList = ["All Courses", "CS 301", "CS 401", "CS 402", "CS 350"]
+interface Material {
+  id: string
+  title: string
+  description: string
+  file_url: string
+  file_type: string
+  file_size: number
+  course_id: string
+  lecturer_id: string
+  status: string
+  created_at: string
+  course?: {
+    code: string
+    name: string
+  }
+}
 
 export default function LecturerMaterials() {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [courses, setCourses] = useState<any[]>([])
   const [selectedCourse, setSelectedCourse] = useState("All Courses")
   const [searchTerm, setSearchTerm] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const filteredMaterials = materialsData.filter((material) => {
-    const matchesSearch = material.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCourse = selectedCourse === "All Courses" || material.course === selectedCourse
+  // Modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      fetchData()
+    }
+  }, [user])
+
+  const fetchData = async () => {
+    if (!user) return
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Fetch materials for the logged-in lecturer
+      const { data: materialsData, error: materialsError } = await materialService.getMaterialsByLecturer(user.id)
+      
+      if (materialsError) {
+        setError(materialsError.message)
+        return
+      }
+
+      // Fetch courses for the lecturer
+      const { data: coursesData, error: coursesError } = await courseService.getCoursesByLecturer(user.id)
+      
+      if (coursesError) {
+        setError(coursesError.message)
+        return
+      }
+
+      if (materialsData) {
+        setMaterials(materialsData)
+      }
+
+      if (coursesData) {
+        setCourses(coursesData)
+      }
+    } catch (err) {
+      setError("Failed to fetch materials data")
+      console.error("Error fetching materials data:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUploadMaterial = () => {
+    setSelectedMaterial(null)
+    setModalMode('create')
+    setIsMaterialModalOpen(true)
+  }
+
+  const handleEditMaterial = (material: Material) => {
+    setSelectedMaterial(material)
+    setModalMode('edit')
+    setIsMaterialModalOpen(true)
+  }
+
+  const handleSaveMaterial = async (data: any) => {
+    try {
+      setIsSubmitting(true)
+      let error
+      if (modalMode === 'edit' && selectedMaterial) {
+        ({ error } = await materialService.updateMaterial(selectedMaterial.id, data))
+      } else {
+        ({ error } = await materialService.createMaterial({ ...data, lecturer_id: user.id }))
+      }
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        })
+        return
+      }
+      toast({
+        title: 'Success',
+        description: `Material ${modalMode === 'edit' ? 'updated' : 'created'} successfully`,
+      })
+      setIsMaterialModalOpen(false)
+      fetchData()
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save material',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteMaterial = (material: Material) => {
+    setSelectedMaterial(material)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (selectedMaterial) {
+      try {
+        setIsSubmitting(true)
+        
+        const { error } = await materialService.deleteMaterial(selectedMaterial.id)
+        
+        if (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          })
+          return
+        }
+
+        toast({
+          title: "Success",
+          description: "Material deleted successfully",
+        })
+        
+        setIsDeleteModalOpen(false)
+        fetchData() // Refresh the data
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete material",
+          variant: "destructive",
+        })
+      } finally {
+        setIsSubmitting(false)
+      }
+    }
+  }
+
+  const filteredMaterials = materials.filter((material) => {
+    const matchesSearch = material.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCourse = selectedCourse === "All Courses" || material.course?.code === selectedCourse
     return matchesSearch && matchesCourse
   })
 
   const getFileIcon = (type: string) => {
-    switch (type) {
-      case "PDF":
+    switch (type.toLowerCase()) {
+      case "pdf":
         return <FileText className="h-5 w-5 text-red-600" />
-      case "Video":
+      case "mp4":
+      case "avi":
+      case "mov":
         return <Video className="h-5 w-5 text-blue-600" />
-      case "Presentation":
+      case "ppt":
+      case "pptx":
         return <ImageIcon className="h-5 w-5 text-orange-600" />
-      case "Document":
+      case "doc":
+      case "docx":
         return <File className="h-5 w-5 text-blue-600" />
       default:
         return <File className="h-5 w-5 text-gray-600" />
     }
   }
 
-  const totalMaterials = materialsData.length
-  const totalDownloads = materialsData.reduce((sum, material) => sum + material.downloads, 0)
-  const publishedMaterials = materialsData.filter((m) => m.status === "Published").length
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading materials...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchData}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
+
+  const totalMaterials = materials.length
+  const totalDownloads = materials.reduce((sum, material) => sum + (material.downloads_count || 0), 0)
+  const publishedMaterials = materials.filter((m) => m.status === "published").length
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
@@ -108,7 +254,11 @@ export default function LecturerMaterials() {
           <h1 className="text-3xl font-bold text-gray-900">Course Materials</h1>
           <p className="text-gray-600">Upload and manage learning resources for your courses</p>
         </div>
-        <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white">
+        <Button 
+          onClick={handleUploadMaterial}
+          className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+          disabled={isSubmitting}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Upload Material
         </Button>
@@ -134,20 +284,6 @@ export default function LecturerMaterials() {
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-green-400 to-green-600 text-white">
-                <Upload className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-800">{publishedMaterials}</div>
-                <div className="text-sm text-gray-600">Published</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-white">
                 <Download className="h-6 w-6" />
               </div>
               <div>
@@ -161,35 +297,53 @@ export default function LecturerMaterials() {
         <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-white">
+                <Upload className="h-6 w-6" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-800">{publishedMaterials}</div>
+                <div className="text-sm text-gray-600">Published</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white">
                 <FileText className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{totalMaterials - publishedMaterials}</div>
-                <div className="text-sm text-gray-600">Drafts</div>
+                <div className="text-2xl font-bold text-gray-800">{courses.length}</div>
+                <div className="text-sm text-gray-600">Courses</div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Upload Area */}
+      {/* Search and Filters */}
       <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-800">
-            <Upload className="h-5 w-5 text-blue-600" />
-            Quick Upload
-          </CardTitle>
-          <CardDescription>Drag and drop files or click to browse</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer">
-            <Upload className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-            <p className="text-lg font-medium text-gray-700 mb-2">Drop files here to upload</p>
-            <p className="text-sm text-gray-500 mb-4">Supports PDF, DOC, PPT, MP4, and image files</p>
-            <Button variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
-              Browse Files
-            </Button>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search materials by title..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filter
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -197,100 +351,127 @@ export default function LecturerMaterials() {
       {/* Materials Table */}
       <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-gray-800">
-                <File className="h-5 w-5 text-blue-600" />
-                Materials Library
-              </CardTitle>
-              <CardDescription>Manage all your course materials</CardDescription>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="Search materials..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    {selectedCourse}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Filter by Course</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {courseList.map((course) => (
-                    <DropdownMenuItem key={course} onClick={() => setSelectedCourse(course)}>
-                      {course}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
+          <CardTitle className="flex items-center gap-2 text-gray-800">
+            <File className="h-5 w-5 text-blue-600" />
+            Material Records
+          </CardTitle>
+          <CardDescription>
+            Showing {filteredMaterials.length} of {materials.length} materials
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>File</TableHead>
-                <TableHead>Course</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Upload Date</TableHead>
-                <TableHead>Downloads</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredMaterials.map((material) => (
-                <TableRow key={material.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      {getFileIcon(material.type)}
-                      <div>
-                        <div className="font-medium text-gray-900">{material.name}</div>
-                        <div className="text-sm text-gray-600">{material.type}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">{material.course}</TableCell>
-                  <TableCell>{material.size}</TableCell>
-                  <TableCell>{new Date(material.uploadDate).toLocaleDateString()}</TableCell>
-                  <TableCell>{material.downloads}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={material.status === "Published" ? "default" : "secondary"}
-                      className={material.status === "Published" ? "bg-green-500" : "bg-orange-500"}
-                    >
-                      {material.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {filteredMaterials.length === 0 ? (
+            <div className="text-center py-8">
+              <File className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No materials found.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Material</TableHead>
+                  <TableHead>Course</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Uploaded</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredMaterials.map((material) => (
+                  <TableRow key={material.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        {getFileIcon(material.file_type)}
+                        <div>
+                          <div className="font-medium text-gray-900">{material.title}</div>
+                          <div className="text-sm text-gray-500">{material.description}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="border-blue-200 text-blue-700">
+                        {material.course?.code || 'Unknown Course'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{material.file_type.toUpperCase()}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-900">{formatFileSize(material.file_size)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={material.status === "published" ? "default" : "secondary"}
+                        className={
+                          material.status === "published"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }
+                      >
+                        {material.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-900">
+                        {new Date(material.created_at).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEditMaterial(material)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteMaterial(material)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      {/* Modals */}
+      <MaterialModal
+        isOpen={isMaterialModalOpen}
+        onClose={() => setIsMaterialModalOpen(false)}
+        onSave={handleSaveMaterial}
+        material={modalMode === 'edit' ? selectedMaterial : null}
+        courses={courses.map((c: any) => ({ id: c.id, code: c.code, name: c.name }))}
+        mode={modalMode}
+      />
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Material"
+        message={`Are you sure you want to delete ${selectedMaterial?.title}? This action cannot be undone.`}
+        isLoading={isSubmitting}
+      />
     </div>
   )
 }

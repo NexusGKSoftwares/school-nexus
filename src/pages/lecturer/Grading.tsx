@@ -1,102 +1,163 @@
-import { BarChart3, FileText, CheckCircle, Clock, AlertTriangle, Eye, Edit } from "lucide-react"
+"use client"
+
+import { BarChart3, FileText, CheckCircle, Clock, AlertTriangle, Eye, Edit, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
+import { gradeService, courseService } from "@/lib/dataService"
+import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
-const gradingData = [
-  {
-    id: 1,
-    student: "Sarah Johnson",
-    assignment: "Binary Search Tree Implementation",
-    course: "CS 301",
-    submittedAt: "2024-01-16 14:30",
-    status: "Pending",
-    maxPoints: 100,
-    currentGrade: null,
-  },
-  {
-    id: 2,
-    student: "Michael Brown",
-    assignment: "Database Design Project",
-    course: "CS 401",
-    submittedAt: "2024-01-15 16:45",
-    status: "Graded",
-    maxPoints: 150,
-    currentGrade: 138,
-  },
-  {
-    id: 3,
-    student: "Emily Davis",
-    assignment: "Software Requirements Analysis",
-    course: "CS 402",
-    submittedAt: "2024-01-14 09:15",
-    status: "In Review",
-    maxPoints: 75,
-    currentGrade: null,
-  },
-  {
-    id: 4,
-    student: "James Wilson",
-    assignment: "Web Application Development",
-    course: "CS 350",
-    submittedAt: "2024-01-13 11:20",
-    status: "Graded",
-    maxPoints: 200,
-    currentGrade: 185,
-  },
-  {
-    id: 5,
-    student: "Lisa Anderson",
-    assignment: "Data Structures Quiz",
-    course: "CS 301",
-    submittedAt: "2024-01-12 10:45",
-    status: "Pending",
-    maxPoints: 50,
-    currentGrade: null,
-  },
-]
+interface Grade {
+  id: string
+  student_id: string
+  course_id: string
+  assignment_id?: string
+  quiz_id?: string
+  score: number
+  max_score: number
+  feedback: string
+  status: string
+  created_at: string
+  student?: {
+    first_name: string
+    last_name: string
+    profile?: {
+      email: string
+    }
+  }
+  course?: {
+    code: string
+    name: string
+  }
+  assignment?: {
+    title: string
+  }
+  quiz?: {
+    title: string
+  }
+}
 
-const courseGrades = [
-  {
-    course: "CS 301",
-    totalStudents: 45,
-    graded: 38,
-    pending: 7,
-    avgGrade: 82.5,
-  },
-  {
-    course: "CS 401",
-    totalStudents: 38,
-    graded: 35,
-    pending: 3,
-    avgGrade: 78.2,
-  },
-  {
-    course: "CS 402",
-    totalStudents: 42,
-    graded: 40,
-    pending: 2,
-    avgGrade: 85.1,
-  },
-  {
-    course: "CS 350",
-    totalStudents: 31,
-    graded: 31,
-    pending: 0,
-    avgGrade: 79.8,
-  },
-]
+interface CourseGradeSummary {
+  course: string
+  totalStudents: number
+  graded: number
+  pending: number
+  avgGrade: number
+}
 
 export default function LecturerGrading() {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [grades, setGrades] = useState<Grade[]>([])
+  const [courseSummaries, setCourseSummaries] = useState<CourseGradeSummary[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (user) {
+      fetchData()
+    }
+  }, [user])
+
+  const fetchData = async () => {
+    if (!user) return
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Fetch grades for the logged-in lecturer
+      const { data: gradesData, error: gradesError } = await gradeService.getGradesByLecturer(user.id)
+      
+      if (gradesError) {
+        setError(gradesError.message)
+        return
+      }
+
+      // Fetch courses for the lecturer
+      const { data: coursesData, error: coursesError } = await courseService.getCoursesByLecturer(user.id)
+      
+      if (coursesError) {
+        setError(coursesError.message)
+        return
+      }
+
+      if (gradesData) {
+        setGrades(gradesData)
+
+        // Generate course summaries
+        if (coursesData) {
+          const summaries: CourseGradeSummary[] = coursesData.map(course => {
+            const courseGrades = gradesData.filter(g => g.course_id === course.id)
+            const graded = courseGrades.filter(g => g.status === 'graded').length
+            const pending = courseGrades.filter(g => g.status === 'pending').length
+            const avgGrade = graded > 0 
+              ? Math.round(courseGrades.filter(g => g.status === 'graded').reduce((sum, g) => sum + (g.score / g.max_score * 100), 0) / graded)
+              : 0
+
+            return {
+              course: course.code,
+              totalStudents: course.enrolled_students || 0,
+              graded,
+              pending,
+              avgGrade
+            }
+          })
+          setCourseSummaries(summaries)
+        }
+      }
+    } catch (err) {
+      setError("Failed to fetch grading data")
+      console.error("Error fetching grading data:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpdateGrade = async (gradeId: string, score: number, feedback: string) => {
+    try {
+      const { error } = await gradeService.updateGrade(gradeId, {
+        score,
+        feedback,
+        status: 'graded'
+      })
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Success",
+        description: "Grade updated successfully",
+      })
+
+      // Refresh the data
+      fetchData()
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to update grade",
+        variant: "destructive",
+      })
+    }
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "Graded":
+      case "graded":
         return <CheckCircle className="h-4 w-4 text-green-600" />
-      case "Pending":
+      case "pending":
         return <Clock className="h-4 w-4 text-orange-600" />
-      case "In Review":
+      case "in_review":
         return <AlertTriangle className="h-4 w-4 text-blue-600" />
       default:
         return <Clock className="h-4 w-4 text-gray-600" />
@@ -105,21 +166,43 @@ export default function LecturerGrading() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Graded":
+      case "graded":
         return "bg-green-500"
-      case "Pending":
+      case "pending":
         return "bg-orange-500"
-      case "In Review":
+      case "in_review":
         return "bg-blue-500"
       default:
         return "bg-gray-500"
     }
   }
 
-  const totalSubmissions = gradingData.length
-  const pendingGrading = gradingData.filter((g) => g.status === "Pending").length
-  const gradedSubmissions = gradingData.filter((g) => g.status === "Graded").length
-  const inReview = gradingData.filter((g) => g.status === "In Review").length
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading grading data...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchData}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
+
+  const totalSubmissions = grades.length
+  const pendingGrading = grades.filter((g) => g.status === "pending").length
+  const gradedSubmissions = grades.filter((g) => g.status === "graded").length
+  const inReview = grades.filter((g) => g.status === "in_review").length
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
@@ -198,94 +281,124 @@ export default function LecturerGrading() {
         {/* Course Progress */}
         <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-lg text-gray-800">Course Progress</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-gray-800">
+              <BarChart3 className="h-5 w-5 text-blue-600" />
+              Course Progress
+            </CardTitle>
             <CardDescription>Grading progress by course</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {courseGrades.map((course, index) => (
-              <div key={index} className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-gray-700">{course.course}</span>
-                  <span className="text-gray-600">{Math.round((course.graded / course.totalStudents) * 100)}%</span>
-                </div>
-                <Progress value={(course.graded / course.totalStudents) * 100} className="h-2" />
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Graded: {course.graded}</span>
-                  <span>Pending: {course.pending}</span>
-                </div>
-                <div className="text-xs text-blue-600 font-medium">Avg: {course.avgGrade.toFixed(1)}%</div>
+          <CardContent>
+            {courseSummaries.length === 0 ? (
+              <div className="text-center py-4">
+                <BarChart3 className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-500 text-sm">No course data available</p>
               </div>
-            ))}
+            ) : (
+              <div className="space-y-4">
+                {courseSummaries.map((summary, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">{summary.course}</span>
+                      <span className="text-sm text-gray-500">{summary.graded}/{summary.totalStudents}</span>
+                    </div>
+                    <Progress value={(summary.graded / summary.totalStudents) * 100} className="h-2" />
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Avg: {summary.avgGrade}%</span>
+                      <span>{summary.pending} pending</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Grading Queue */}
+        {/* Grading Table */}
         <Card className="lg:col-span-3 bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-gray-800">
-              <BarChart3 className="h-5 w-5 text-blue-600" />
-              Grading Queue
+              <FileText className="h-5 w-5 text-blue-600" />
+              Submissions to Grade
             </CardTitle>
-            <CardDescription>Submissions requiring your attention</CardDescription>
+            <CardDescription>Review and grade student submissions</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Assignment</TableHead>
-                  <TableHead>Course</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead>Points</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {gradingData.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <div className="font-medium text-gray-900">{item.student}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium text-gray-900">{item.assignment}</div>
-                    </TableCell>
-                    <TableCell className="font-medium">{item.course}</TableCell>
-                    <TableCell>{new Date(item.submittedAt).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {item.currentGrade !== null ? (
-                          <span className="font-medium">
-                            {item.currentGrade}/{item.maxPoints}
-                          </span>
-                        ) : (
-                          <span className="text-gray-500">-/{item.maxPoints}</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(item.status)}
-                        <Badge className={`${getStatusColor(item.status)} text-white`}>{item.status}</Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {item.status !== "Graded" && (
-                          <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Grade
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
+            {grades.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No submissions to grade.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Student</TableHead>
+                    <TableHead>Assignment/Quiz</TableHead>
+                    <TableHead>Course</TableHead>
+                    <TableHead>Submitted</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {grades.map((grade) => (
+                    <TableRow key={grade.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {grade.student ? `${grade.student.first_name} ${grade.student.last_name}` : 'Unknown Student'}
+                          </div>
+                          <div className="text-sm text-gray-600">{grade.student?.profile?.email}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {grade.assignment?.title || grade.quiz?.title || 'Unknown'}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {grade.assignment ? 'Assignment' : 'Quiz'}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{grade.course?.code || 'Unknown'}</TableCell>
+                      <TableCell>{new Date(grade.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {grade.status === 'graded' ? (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{grade.score}/{grade.max_score}</span>
+                            <span className="text-sm text-gray-500">
+                              ({Math.round((grade.score / grade.max_score) * 100)}%)
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">Not graded</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(grade.status)}
+                          <Badge className={getStatusColor(grade.status)}>
+                            {grade.status}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center gap-2 justify-end">
+                          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>

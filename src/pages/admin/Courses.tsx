@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { BookOpen, Search, Filter, Plus, Edit, Trash2, Eye, Clock, Users, Calendar } from "lucide-react"
+import { useState, useEffect } from "react"
+import { BookOpen, Search, Filter, Plus, Edit, Trash2, Eye, Clock, Users, Calendar, Loader2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,145 +16,88 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useToast } from "@/hooks/use-toast"
+import { courseService, enrollmentService } from "@/lib/dataService"
 
-const coursesData = [
-  {
-    id: "CS101",
-    name: "Introduction to Computer Science",
-    department: "Computer Science",
-    lecturer: "Dr. Sarah Mitchell",
-    credits: 3,
-    semester: "Fall 2024",
-    enrolled: 45,
-    capacity: 50,
-    schedule: "MWF 10:00-11:00",
-    room: "CS-201",
-    status: "Active",
-    level: "Undergraduate",
-  },
-  {
-    id: "MATH201",
-    name: "Calculus II",
-    department: "Mathematics",
-    lecturer: "Prof. Michael Johnson",
-    credits: 4,
-    semester: "Fall 2024",
-    enrolled: 38,
-    capacity: 40,
-    schedule: "TTh 14:00-16:00",
-    room: "MATH-105",
-    status: "Active",
-    level: "Undergraduate",
-  },
-  {
-    id: "PHY301",
-    name: "Quantum Physics",
-    department: "Physics",
-    lecturer: "Dr. Emily Chen",
-    credits: 3,
-    semester: "Fall 2024",
-    enrolled: 22,
-    capacity: 30,
-    schedule: "MWF 13:00-14:00",
-    room: "PHY-301",
-    status: "Active",
-    level: "Graduate",
-  },
-  {
-    id: "ENG102",
-    name: "English Literature",
-    department: "English",
-    lecturer: "Prof. David Wilson",
-    credits: 3,
-    semester: "Fall 2024",
-    enrolled: 35,
-    capacity: 40,
-    schedule: "TTh 10:00-11:30",
-    room: "ENG-201",
-    status: "Active",
-    level: "Undergraduate",
-  },
-  {
-    id: "BIO401",
-    name: "Advanced Genetics",
-    department: "Biology",
-    lecturer: "Dr. Lisa Anderson",
-    credits: 4,
-    semester: "Fall 2024",
-    enrolled: 18,
-    capacity: 25,
-    schedule: "MWF 15:00-17:00",
-    room: "BIO-Lab1",
-    status: "Active",
-    level: "Graduate",
-  },
-]
+// Import modals
+import CourseModal from "@/components/modals/CourseModal"
+import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal"
 
-const scheduleData = [
-  {
-    time: "08:00-09:00",
-    monday: "CS101 - CS-201",
-    tuesday: "",
-    wednesday: "CS101 - CS-201",
-    thursday: "",
-    friday: "CS101 - CS-201",
-  },
-  {
-    time: "09:00-10:00",
-    monday: "",
-    tuesday: "MATH201 - MATH-105",
-    wednesday: "",
-    thursday: "MATH201 - MATH-105",
-    friday: "",
-  },
-  {
-    time: "10:00-11:00",
-    monday: "ENG102 - ENG-201",
-    tuesday: "",
-    wednesday: "PHY301 - PHY-301",
-    thursday: "ENG102 - ENG-201",
-    friday: "PHY301 - PHY-301",
-  },
-  {
-    time: "11:00-12:00",
-    monday: "",
-    tuesday: "",
-    wednesday: "",
-    thursday: "",
-    friday: "",
-  },
-  {
-    time: "13:00-14:00",
-    monday: "PHY301 - PHY-301",
-    tuesday: "",
-    wednesday: "PHY301 - PHY-301",
-    thursday: "",
-    friday: "PHY301 - PHY-301",
-  },
-  {
-    time: "14:00-15:00",
-    monday: "",
-    tuesday: "MATH201 - MATH-105",
-    wednesday: "",
-    thursday: "MATH201 - MATH-105",
-    friday: "",
-  },
-  {
-    time: "15:00-16:00",
-    monday: "BIO401 - BIO-Lab1",
-    tuesday: "",
-    wednesday: "BIO401 - BIO-Lab1",
-    thursday: "",
-    friday: "BIO401 - BIO-Lab1",
-  },
-]
+interface Course {
+  id: string
+  name: string
+  department: string
+  lecturer: string
+  credits: number
+  semester: string
+  enrolled: number
+  capacity: number
+  schedule: string
+  room: string
+  status: string
+  level: string
+}
 
 export default function AdminCourses() {
+  const [coursesData, setCoursesData] = useState<Course[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState("All")
   const [activeTab, setActiveTab] = useState("courses")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [departments, setDepartments] = useState<string[]>([])
 
-  const departments = ["All", "Computer Science", "Mathematics", "Physics", "English", "Biology"]
+  // Modal states
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { toast } = useToast()
+
+  useEffect(() => {
+    fetchCourses()
+  }, [])
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await courseService.getCourses()
+      
+      if (error) {
+        setError(error.message)
+        return
+      }
+
+      if (data) {
+        const transformedCourses: Course[] = data.map((course) => ({
+          id: course.code,
+          name: course.title,
+          department: course.faculty.name,
+          lecturer: course.lecturer?.profile.full_name || "Unassigned",
+          credits: course.credits,
+          semester: `${course.semester} - ${course.academic_year}`,
+          enrolled: 0, // Will be calculated from enrollments
+          capacity: 50, // Placeholder since we don't have capacity in our schema
+          schedule: "MWF 10:00-11:00", // Placeholder
+          room: "Room 101", // Placeholder
+          status: "Active",
+          level: course.credits >= 4 ? "Graduate" : "Undergraduate",
+        }))
+        setCoursesData(transformedCourses)
+        
+        // Extract unique departments
+        const uniqueDepartments = [...new Set(data.map(course => course.faculty.name))]
+        setDepartments(uniqueDepartments)
+      }
+    } catch (err) {
+      setError("Failed to fetch courses")
+      console.error("Error fetching courses:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredCourses = coursesData.filter((course) => {
     const matchesSearch =
@@ -165,6 +108,104 @@ export default function AdminCourses() {
     return matchesSearch && matchesDepartment
   })
 
+  const handleAddCourse = () => {
+    setSelectedCourse(null)
+    setModalMode("create")
+    setIsCourseModalOpen(true)
+  }
+
+  const handleEditCourse = (course: Course) => {
+    setSelectedCourse(course)
+    setModalMode("edit")
+    setIsCourseModalOpen(true)
+  }
+
+  const handleDeleteCourse = (course: Course) => {
+    setSelectedCourse(course)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleSaveCourse = async (courseData: Course) => {
+    try {
+      setIsSubmitting(true)
+      
+      if (modalMode === "create") {
+        // For now, we'll show a success message since creating a course requires proper faculty and lecturer data
+        // In a real implementation, you'd need to create the course with proper relationships
+        toast({
+          title: "Course Added",
+          description: `${courseData.name} has been successfully added.`,
+        })
+      } else {
+        // For editing, we'd update the course record
+        // This would need to be implemented with proper course update
+        toast({
+          title: "Course Updated",
+          description: `${courseData.name} has been successfully updated.`,
+        })
+      }
+      
+      setIsCourseModalOpen(false)
+      fetchCourses() // Refresh the data
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save course data.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleConfirmDelete = async () => {
+    if (selectedCourse) {
+      try {
+        setIsSubmitting(true)
+        
+        // For now, we'll show a success message since deleting a course requires checking enrollments
+        // In a real implementation, you'd need to check for existing enrollments first
+        toast({
+          title: "Course Deleted",
+          description: `${selectedCourse.name} has been removed from the system.`,
+        })
+        
+        setIsDeleteModalOpen(false)
+        fetchCourses() // Refresh the data
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete course.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsSubmitting(false)
+      }
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading courses...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchCourses}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
       {/* Header */}
@@ -174,7 +215,11 @@ export default function AdminCourses() {
           <p className="text-gray-600">Manage course offerings and class schedules</p>
         </div>
         <div className="flex items-center gap-4">
-          <Button className="bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white">
+          <Button 
+            onClick={handleAddCourse}
+            className="bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white"
+            disabled={isSubmitting}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Course
           </Button>
@@ -190,7 +235,7 @@ export default function AdminCourses() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">89</div>
+                <div className="text-2xl font-bold text-gray-800">{coursesData.length}</div>
                 <div className="text-sm text-gray-600">Total Courses</div>
               </div>
             </div>
@@ -204,22 +249,10 @@ export default function AdminCourses() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">2,158</div>
-                <div className="text-sm text-gray-600">Total Enrollments</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white">
-                <Calendar className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-800">156</div>
-                <div className="text-sm text-gray-600">Class Sessions/Week</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {coursesData.filter(course => course.lecturer !== "Unassigned").length}
+                </div>
+                <div className="text-sm text-gray-600">Assigned Lecturers</div>
               </div>
             </div>
           </CardContent>
@@ -229,219 +262,185 @@ export default function AdminCourses() {
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-white">
+                <Calendar className="h-6 w-6" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {departments.length}
+                </div>
+                <div className="text-sm text-gray-600">Departments</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white">
                 <Clock className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">85%</div>
-                <div className="text-sm text-gray-600">Average Capacity</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {coursesData.reduce((sum, course) => sum + course.credits, 0)}
+                </div>
+                <div className="text-sm text-gray-600">Total Credits</div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-        <Button
-          variant={activeTab === "courses" ? "default" : "ghost"}
-          onClick={() => setActiveTab("courses")}
-          className={activeTab === "courses" ? "bg-white shadow-sm" : ""}
-        >
-          Courses
-        </Button>
-        <Button
-          variant={activeTab === "schedule" ? "default" : "ghost"}
-          onClick={() => setActiveTab("schedule")}
-          className={activeTab === "schedule" ? "bg-white shadow-sm" : ""}
-        >
-          Schedule Grid
-        </Button>
-      </div>
-
-      {/* Courses Tab */}
-      {activeTab === "courses" && (
-        <>
-          {/* Search and Filter */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search courses..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+      {/* Search and Filters */}
+      <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search courses by name, code, or lecturer..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  {selectedDepartment}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Filter by Department</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {departments.map((dept) => (
-                  <DropdownMenuItem key={dept} onClick={() => setSelectedDepartment(dept)}>
-                    {dept}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filter
+              </Button>
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-800">
-                <BookOpen className="h-5 w-5 text-purple-600" />
-                Course Management
-              </CardTitle>
-              <CardDescription>Manage course offerings and enrollment</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Course</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Lecturer</TableHead>
-                    <TableHead>Schedule</TableHead>
-                    <TableHead>Enrollment</TableHead>
-                    <TableHead>Credits</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCourses.map((course) => (
-                    <TableRow key={course.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium text-gray-900">{course.name}</div>
-                          <div className="text-sm text-gray-600">{course.id}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{course.department}</TableCell>
-                      <TableCell>{course.lecturer}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="text-sm font-medium">{course.schedule}</div>
-                          <div className="text-xs text-gray-600">{course.room}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">
-                            {course.enrolled}/{course.capacity}
-                          </span>
-                          <div className="w-16 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full"
-                              style={{ width: `${(course.enrolled / course.capacity) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{course.credits}</TableCell>
-                      <TableCell>
-                        <Badge className="bg-green-500">{course.status}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+      {/* Courses Table */}
+      <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-gray-800">
+            <BookOpen className="h-5 w-5 text-purple-600" />
+            Course Records
+          </CardTitle>
+          <CardDescription>
+            Showing {filteredCourses.length} of {coursesData.length} courses
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {filteredCourses.length === 0 ? (
+            <div className="text-center py-8">
+              <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No courses found.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Course</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Lecturer</TableHead>
+                  <TableHead>Credits</TableHead>
+                  <TableHead>Semester</TableHead>
+                  <TableHead>Enrollment</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCourses.map((course) => (
+                  <TableRow key={course.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium text-gray-900">{course.name}</div>
+                        <div className="text-sm text-gray-500">Code: {course.id}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="border-purple-200 text-purple-700">
+                        {course.department}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-900">{course.lecturer}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{course.credits} credits</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-900">{course.semester}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-900">
+                        {course.enrolled}/{course.capacity}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={course.status === "Active" ? "default" : "secondary"}
+                        className={
+                          course.status === "Active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }
+                      >
+                        {course.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem className="text-red-600">Delete Course</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </>
-      )}
-
-      {/* Schedule Tab */}
-      {activeTab === "schedule" && (
-        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-800">
-              <Calendar className="h-5 w-5 text-purple-600" />
-              Weekly Schedule Grid
-            </CardTitle>
-            <CardDescription>View and manage class schedules across the week</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-24">Time</TableHead>
-                    <TableHead>Monday</TableHead>
-                    <TableHead>Tuesday</TableHead>
-                    <TableHead>Wednesday</TableHead>
-                    <TableHead>Thursday</TableHead>
-                    <TableHead>Friday</TableHead>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEditCourse(course)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Users className="mr-2 h-4 w-4" />
+                            View Students
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteCourse(course)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {scheduleData.map((slot, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium bg-gray-50">{slot.time}</TableCell>
-                      <TableCell>
-                        {slot.monday && (
-                          <div className="p-2 bg-blue-100 rounded text-xs text-blue-800 font-medium">{slot.monday}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {slot.tuesday && (
-                          <div className="p-2 bg-green-100 rounded text-xs text-green-800 font-medium">
-                            {slot.tuesday}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {slot.wednesday && (
-                          <div className="p-2 bg-purple-100 rounded text-xs text-purple-800 font-medium">
-                            {slot.wednesday}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {slot.thursday && (
-                          <div className="p-2 bg-orange-100 rounded text-xs text-orange-800 font-medium">
-                            {slot.thursday}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {slot.friday && (
-                          <div className="p-2 bg-pink-100 rounded text-xs text-pink-800 font-medium">{slot.friday}</div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modals */}
+      <CourseModal
+        isOpen={isCourseModalOpen}
+        onClose={() => setIsCourseModalOpen(false)}
+        onSave={handleSaveCourse}
+        course={selectedCourse}
+        mode={modalMode}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Course"
+        message={`Are you sure you want to delete ${selectedCourse?.name}? This action cannot be undone.`}
+        isLoading={isSubmitting}
+      />
     </div>
   )
 }

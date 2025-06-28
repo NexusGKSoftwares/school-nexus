@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Building2, Search, Plus, Edit, Trash2, Users, BookOpen, GraduationCap, Eye } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Building2, Search, Plus, Edit, Trash2, Users, BookOpen, GraduationCap, Eye, Loader2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,114 +9,106 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { facultyService, lecturerService, studentService, courseService } from "@/lib/dataService"
 
-const facultiesData = [
-  {
-    id: "FAC001",
-    name: "Faculty of Engineering",
-    dean: "Dr. Robert Johnson",
-    departments: 5,
-    lecturers: 45,
-    students: 1250,
-    courses: 28,
-    established: "1985",
-    status: "Active",
-    description: "Engineering and Technology programs",
-  },
-  {
-    id: "FAC002",
-    name: "Faculty of Science",
-    dean: "Prof. Sarah Mitchell",
-    departments: 4,
-    lecturers: 38,
-    students: 980,
-    courses: 24,
-    established: "1978",
-    status: "Active",
-    description: "Natural Sciences and Mathematics",
-  },
-  {
-    id: "FAC003",
-    name: "Faculty of Arts & Humanities",
-    dean: "Dr. Michael Chen",
-    departments: 6,
-    lecturers: 32,
-    students: 750,
-    courses: 35,
-    established: "1972",
-    status: "Active",
-    description: "Liberal Arts and Humanities programs",
-  },
-  {
-    id: "FAC004",
-    name: "Faculty of Business",
-    dean: "Prof. Lisa Anderson",
-    departments: 3,
-    lecturers: 28,
-    students: 890,
-    courses: 18,
-    established: "1990",
-    status: "Active",
-    description: "Business Administration and Management",
-  },
-]
+interface Faculty {
+  id: string
+  name: string
+  dean: string
+  departments: number
+  lecturers: number
+  students: number
+  courses: number
+  established: string
+  status: string
+  description: string
+}
 
-const departmentsData = [
-  {
-    id: "DEPT001",
-    name: "Computer Science",
-    faculty: "Faculty of Engineering",
-    head: "Dr. Emily Davis",
-    lecturers: 12,
-    students: 456,
-    courses: 8,
-    status: "Active",
-  },
-  {
-    id: "DEPT002",
-    name: "Mechanical Engineering",
-    faculty: "Faculty of Engineering",
-    head: "Prof. James Wilson",
-    lecturers: 15,
-    students: 389,
-    courses: 10,
-    status: "Active",
-  },
-  {
-    id: "DEPT003",
-    name: "Mathematics",
-    faculty: "Faculty of Science",
-    head: "Dr. Maria Rodriguez",
-    lecturers: 10,
-    students: 234,
-    courses: 6,
-    status: "Active",
-  },
-  {
-    id: "DEPT004",
-    name: "Physics",
-    faculty: "Faculty of Science",
-    head: "Prof. David Thompson",
-    lecturers: 8,
-    students: 178,
-    courses: 5,
-    status: "Active",
-  },
-  {
-    id: "DEPT005",
-    name: "English Literature",
-    faculty: "Faculty of Arts & Humanities",
-    head: "Dr. Jennifer Adams",
-    lecturers: 9,
-    students: 167,
-    courses: 7,
-    status: "Active",
-  },
-]
+interface Department {
+  id: string
+  name: string
+  faculty: string
+  head: string
+  lecturers: number
+  students: number
+  courses: number
+  status: string
+}
 
 export default function AdminFaculties() {
+  const [facultiesData, setFacultiesData] = useState<Faculty[]>([])
+  const [departmentsData, setDepartmentsData] = useState<Department[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("faculties")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      
+      // Fetch faculties
+      const { data: faculties, error: facultiesError } = await facultyService.getFaculties()
+      
+      if (facultiesError) {
+        setError(facultiesError.message)
+        return
+      }
+
+      // Fetch lecturers for counting
+      const { data: lecturers } = await lecturerService.getLecturers()
+      
+      // Fetch students for counting
+      const { data: students } = await studentService.getStudents()
+      
+      // Fetch courses for counting
+      const { data: courses } = await courseService.getCourses()
+
+      if (faculties) {
+        const transformedFaculties: Faculty[] = faculties.map((faculty) => {
+          const facultyLecturers = lecturers?.filter(l => l.faculty.id === faculty.id).length || 0
+          const facultyStudents = students?.filter(s => s.faculty.id === faculty.id).length || 0
+          const facultyCourses = courses?.filter(c => c.faculty.id === faculty.id).length || 0
+          
+          return {
+            id: faculty.id,
+            name: faculty.name,
+            dean: faculty.dean || "TBD",
+            departments: 1, // Placeholder since we don't have departments table
+            lecturers: facultyLecturers,
+            students: facultyStudents,
+            courses: facultyCourses,
+            established: faculty.established_year || "N/A",
+            status: faculty.status,
+            description: faculty.description || `${faculty.name} programs`,
+          }
+        })
+        setFacultiesData(transformedFaculties)
+
+        // Generate departments data based on faculties
+        const mockDepartments: Department[] = faculties.map((faculty, index) => ({
+          id: `DEPT${String(index + 1).padStart(3, '0')}`,
+          name: `${faculty.name} Department`,
+          faculty: faculty.name,
+          head: faculty.dean || "TBD",
+          lecturers: lecturers?.filter(l => l.faculty.id === faculty.id).length || 0,
+          students: students?.filter(s => s.faculty.id === faculty.id).length || 0,
+          courses: courses?.filter(c => c.faculty.id === faculty.id).length || 0,
+          status: "Active",
+        }))
+        setDepartmentsData(mockDepartments)
+      }
+    } catch (err) {
+      setError("Failed to fetch faculties data")
+      console.error("Error fetching faculties data:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredFaculties = facultiesData.filter(
     (faculty) =>
@@ -130,6 +122,28 @@ export default function AdminFaculties() {
       dept.head.toLowerCase().includes(searchTerm.toLowerCase()) ||
       dept.faculty.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading faculties data...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchData}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
@@ -156,7 +170,7 @@ export default function AdminFaculties() {
                 <Building2 className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">4</div>
+                <div className="text-2xl font-bold text-gray-800">{facultiesData.length}</div>
                 <div className="text-sm text-gray-600">Total Faculties</div>
               </div>
             </div>
@@ -170,7 +184,7 @@ export default function AdminFaculties() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">18</div>
+                <div className="text-2xl font-bold text-gray-800">{departmentsData.length}</div>
                 <div className="text-sm text-gray-600">Total Departments</div>
               </div>
             </div>
@@ -184,7 +198,9 @@ export default function AdminFaculties() {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">143</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {facultiesData.reduce((sum, faculty) => sum + faculty.lecturers, 0)}
+                </div>
                 <div className="text-sm text-gray-600">Total Lecturers</div>
               </div>
             </div>
@@ -198,8 +214,10 @@ export default function AdminFaculties() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">3,870</div>
-                <div className="text-sm text-gray-600">Total Students</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {facultiesData.reduce((sum, faculty) => sum + faculty.courses, 0)}
+                </div>
+                <div className="text-sm text-gray-600">Total Courses</div>
               </div>
             </div>
           </CardContent>
@@ -225,83 +243,100 @@ export default function AdminFaculties() {
       </div>
 
       {/* Search */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder={`Search ${activeTab}...`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+        <CardContent className="p-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder={`Search ${activeTab}...`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 border-blue-200 focus:border-blue-400"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Faculties Tab */}
       {activeTab === "faculties" && (
         <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-gray-800">
-              <Building2 className="h-5 w-5 text-purple-600" />
+              <Building2 className="h-5 w-5 text-blue-600" />
               Faculty Management
             </CardTitle>
-            <CardDescription>Manage academic faculties and their leadership</CardDescription>
+            <CardDescription>Manage academic faculties and their programs</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Faculty Name</TableHead>
-                  <TableHead>Dean</TableHead>
-                  <TableHead>Departments</TableHead>
-                  <TableHead>Lecturers</TableHead>
-                  <TableHead>Students</TableHead>
-                  <TableHead>Courses</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredFaculties.map((faculty) => (
-                  <TableRow key={faculty.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium text-gray-900">{faculty.name}</div>
-                        <div className="text-sm text-gray-600">{faculty.description}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{faculty.dean}</TableCell>
-                    <TableCell>{faculty.departments}</TableCell>
-                    <TableCell>{faculty.lecturers}</TableCell>
-                    <TableCell>{faculty.students}</TableCell>
-                    <TableCell>{faculty.courses}</TableCell>
-                    <TableCell>
-                      <Badge className="bg-green-500">{faculty.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                          <Edit className="h-4 w-4" />
-                        </Button>
+            {filteredFaculties.length === 0 ? (
+              <div className="text-center py-8">
+                <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No faculties found matching your criteria.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Faculty</TableHead>
+                    <TableHead>Dean</TableHead>
+                    <TableHead>Departments</TableHead>
+                    <TableHead>Lecturers</TableHead>
+                    <TableHead>Students</TableHead>
+                    <TableHead>Courses</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredFaculties.map((faculty) => (
+                    <TableRow key={faculty.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium text-gray-900">{faculty.name}</div>
+                          <div className="text-sm text-gray-600">{faculty.description}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{faculty.dean}</TableCell>
+                      <TableCell>{faculty.departments}</TableCell>
+                      <TableCell>{faculty.lecturers}</TableCell>
+                      <TableCell>{faculty.students}</TableCell>
+                      <TableCell>{faculty.courses}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-green-500">{faculty.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                              <Trash2 className="h-4 w-4" />
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <Eye className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="text-red-600">Delete Faculty</DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Users className="mr-2 h-4 w-4" />
+                              View Staff
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              View Courses
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       )}
@@ -311,61 +346,78 @@ export default function AdminFaculties() {
         <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-gray-800">
-              <Users className="h-5 w-5 text-purple-600" />
+              <Users className="h-5 w-5 text-green-600" />
               Department Management
             </CardTitle>
-            <CardDescription>Manage academic departments and their heads</CardDescription>
+            <CardDescription>Manage academic departments within faculties</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Department Name</TableHead>
-                  <TableHead>Faculty</TableHead>
-                  <TableHead>Department Head</TableHead>
-                  <TableHead>Lecturers</TableHead>
-                  <TableHead>Students</TableHead>
-                  <TableHead>Courses</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDepartments.map((dept) => (
-                  <TableRow key={dept.id}>
-                    <TableCell className="font-medium">{dept.name}</TableCell>
-                    <TableCell>{dept.faculty}</TableCell>
-                    <TableCell>{dept.head}</TableCell>
-                    <TableCell>{dept.lecturers}</TableCell>
-                    <TableCell>{dept.students}</TableCell>
-                    <TableCell>{dept.courses}</TableCell>
-                    <TableCell>
-                      <Badge className="bg-green-500">{dept.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                          <Edit className="h-4 w-4" />
-                        </Button>
+            {filteredDepartments.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No departments found matching your criteria.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Faculty</TableHead>
+                    <TableHead>Head</TableHead>
+                    <TableHead>Lecturers</TableHead>
+                    <TableHead>Students</TableHead>
+                    <TableHead>Courses</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredDepartments.map((dept) => (
+                    <TableRow key={dept.id}>
+                      <TableCell>
+                        <div className="font-medium text-gray-900">{dept.name}</div>
+                      </TableCell>
+                      <TableCell>{dept.faculty}</TableCell>
+                      <TableCell>{dept.head}</TableCell>
+                      <TableCell>{dept.lecturers}</TableCell>
+                      <TableCell>{dept.students}</TableCell>
+                      <TableCell>{dept.courses}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-green-500">{dept.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                              <Trash2 className="h-4 w-4" />
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <Eye className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="text-red-600">Delete Department</DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Users className="mr-2 h-4 w-4" />
+                              View Staff
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              View Courses
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       )}

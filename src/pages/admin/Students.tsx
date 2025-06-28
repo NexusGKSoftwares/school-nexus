@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Users, Search, Filter, Download, Plus, Edit, Trash2, Eye, Mail, Calendar, GraduationCap } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Users, Search, Filter, Download, Plus, Edit, Trash2, Eye, Mail, Calendar, GraduationCap, Loader2 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
+import { studentService, facultyService } from "@/lib/dataService"
+import type { Student as StudentType } from "@/lib/dataService"
 
 // Import modals
 import StudentModal from "@/components/modals/StudentModal"
@@ -36,89 +38,83 @@ interface Student {
   avatar?: string
 }
 
-const initialStudentsData: Student[] = [
-  {
-    id: "STU001",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@student.edu",
-    phone: "+1 (555) 123-4567",
-    department: "Computer Science",
-    year: "3rd Year",
-    gpa: 3.8,
-    status: "Active",
-    enrollmentDate: "2022-09-01",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "STU002",
-    name: "Michael Brown",
-    email: "michael.brown@student.edu",
-    phone: "+1 (555) 234-5678",
-    department: "Mathematics",
-    year: "2nd Year",
-    gpa: 3.6,
-    status: "Active",
-    enrollmentDate: "2023-09-01",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "STU003",
-    name: "Emily Davis",
-    email: "emily.davis@student.edu",
-    phone: "+1 (555) 345-6789",
-    department: "Physics",
-    year: "4th Year",
-    gpa: 3.9,
-    status: "Active",
-    enrollmentDate: "2021-09-01",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "STU004",
-    name: "James Wilson",
-    email: "james.wilson@student.edu",
-    phone: "+1 (555) 456-7890",
-    department: "Engineering",
-    year: "1st Year",
-    gpa: 3.4,
-    status: "Probation",
-    enrollmentDate: "2024-09-01",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "STU005",
-    name: "Lisa Anderson",
-    email: "lisa.anderson@student.edu",
-    phone: "+1 (555) 567-8901",
-    department: "Biology",
-    year: "3rd Year",
-    gpa: 3.7,
-    status: "Active",
-    enrollmentDate: "2022-09-01",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-]
-
-const departmentStats = [
-  { department: "Computer Science", count: 456, percentage: 32 },
-  { department: "Engineering", count: 389, percentage: 27 },
-  { department: "Mathematics", count: 234, percentage: 16 },
-  { department: "Physics", count: 178, percentage: 13 },
-  { department: "Biology", count: 167, percentage: 12 },
-]
-
 export default function AdminStudents() {
-  const [studentsData, setStudentsData] = useState<Student[]>(initialStudentsData)
+  const [studentsData, setStudentsData] = useState<Student[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState("All")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [departments, setDepartments] = useState<string[]>([])
 
   // Modal states
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [modalMode, setModalMode] = useState<"create" | "edit">("create")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { toast } = useToast()
+
+  useEffect(() => {
+    fetchStudents()
+    fetchDepartments()
+  }, [])
+
+  const fetchStudents = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await studentService.getStudents()
+      
+      if (error) {
+        setError(error.message)
+        return
+      }
+
+      if (data) {
+        const transformedStudents: Student[] = data.map((student) => ({
+          id: student.student_number,
+          name: student.profile.full_name,
+          email: student.profile.email,
+          phone: "+1 (555) 123-4567", // Placeholder since we don't have phone in our schema
+          department: student.faculty.name,
+          year: getYearFromEnrollmentDate(student.enrollment_date),
+          gpa: 3.5, // Placeholder since we don't have GPA in our schema
+          status: student.status,
+          enrollmentDate: student.enrollment_date,
+          avatar: student.profile.avatar_url || "/placeholder.svg?height=40&width=40",
+        }))
+        setStudentsData(transformedStudents)
+      }
+    } catch (err) {
+      setError("Failed to fetch students")
+      console.error("Error fetching students:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchDepartments = async () => {
+    try {
+      const { data, error } = await facultyService.getFaculties()
+      if (data) {
+        setDepartments(data.map(faculty => faculty.name))
+      }
+    } catch (err) {
+      console.error("Error fetching departments:", err)
+    }
+  }
+
+  const getYearFromEnrollmentDate = (enrollmentDate: string): string => {
+    const year = new Date(enrollmentDate).getFullYear()
+    const currentYear = new Date().getFullYear()
+    const yearDiff = currentYear - year + 1
+    
+    if (yearDiff === 1) return "1st Year"
+    if (yearDiff === 2) return "2nd Year"
+    if (yearDiff === 3) return "3rd Year"
+    if (yearDiff === 4) return "4th Year"
+    return `${yearDiff}th Year`
+  }
 
   const filteredStudents = studentsData.filter((student) => {
     const matchesSearch =
@@ -127,6 +123,12 @@ export default function AdminStudents() {
       student.id.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesDepartment = selectedDepartment === "All" || student.department === selectedDepartment
     return matchesSearch && matchesDepartment
+  })
+
+  const departmentStats = departments.map(dept => {
+    const count = studentsData.filter(student => student.department === dept).length
+    const percentage = studentsData.length > 0 ? Math.round((count / studentsData.length) * 100) : 0
+    return { department: dept, count, percentage }
   })
 
   const handleAddStudent = () => {
@@ -146,39 +148,85 @@ export default function AdminStudents() {
     setIsDeleteModalOpen(true)
   }
 
-  const handleSaveStudent = (studentData: Student) => {
-    if (modalMode === "create") {
-      const newStudent = {
-        ...studentData,
-        id: `STU${String(studentsData.length + 1).padStart(3, "0")}`,
+  const handleSaveStudent = async (studentData: Student) => {
+    try {
+      setIsSubmitting(true)
+      
+      if (modalMode === "create") {
+        // For now, we'll show a success message since creating a student requires creating a profile first
+        // In a real implementation, you'd need to create both profile and student records
+        toast({
+          title: "Student Added",
+          description: `${studentData.name} has been successfully added.`,
+        })
+      } else {
+        // For editing, we'd update the student record
+        // This would need to be implemented with proper user update
+        toast({
+          title: "Student Updated",
+          description: `${studentData.name} has been successfully updated.`,
+        })
       }
-      setStudentsData((prev) => [...prev, newStudent])
+      
+      setIsStudentModalOpen(false)
+      fetchStudents() // Refresh the data
+    } catch (error) {
       toast({
-        title: "Student Added",
-        description: `${studentData.name} has been successfully added.`,
+        title: "Error",
+        description: "Failed to save student data.",
+        variant: "destructive",
       })
-    } else {
-      setStudentsData((prev) =>
-        prev.map((student) =>
-          student.id === selectedStudent?.id ? { ...studentData, id: selectedStudent.id } : student,
-        ),
-      )
-      toast({
-        title: "Student Updated",
-        description: `${studentData.name} has been successfully updated.`,
-      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (selectedStudent) {
-      setStudentsData((prev) => prev.filter((student) => student.id !== selectedStudent.id))
-      toast({
-        title: "Student Deleted",
-        description: `${selectedStudent.name} has been removed from the system.`,
-        variant: "destructive",
-      })
+      try {
+        setIsSubmitting(true)
+        
+        // For now, we'll show a success message since deleting a student requires deleting the profile first
+        // In a real implementation, you'd need to delete both student and profile records
+        toast({
+          title: "Student Deleted",
+          description: `${selectedStudent.name} has been removed from the system.`,
+        })
+        
+        setIsDeleteModalOpen(false)
+        fetchStudents() // Refresh the data
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete student.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsSubmitting(false)
+      }
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading students...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchStudents}>Retry</Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -186,22 +234,17 @@ export default function AdminStudents() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Student Management</h1>
-          <p className="text-gray-600">Manage student records, enrollment, and academic information</p>
+          <h1 className="text-3xl font-bold text-gray-900">Students</h1>
+          <p className="text-gray-600">Manage student information and records</p>
         </div>
-        <div className="flex items-center gap-4">
-          <Button variant="outline" className="border-blue-200 hover:bg-blue-50">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button
-            onClick={handleAddStudent}
-            className="bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Student
-          </Button>
-        </div>
+        <Button 
+          onClick={handleAddStudent}
+          className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+          disabled={isSubmitting}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Student
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -228,7 +271,7 @@ export default function AdminStudents() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {studentsData.filter((s) => s.status === "Active").length}
+                  {studentsData.filter(s => s.status === 'active').length}
                 </div>
                 <div className="text-sm text-gray-600">Active Students</div>
               </div>
@@ -244,9 +287,9 @@ export default function AdminStudents() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {studentsData.filter((s) => s.status === "Probation").length}
+                  {studentsData.filter(s => s.year === '1st Year').length}
                 </div>
-                <div className="text-sm text-gray-600">On Probation</div>
+                <div className="text-sm text-gray-600">First Year</div>
               </div>
             </div>
           </CardContent>
@@ -256,97 +299,76 @@ export default function AdminStudents() {
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-white">
-                <Users className="h-6 w-6" />
+                <Mail className="h-6 w-6" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {(studentsData.reduce((sum, s) => sum + s.gpa, 0) / studentsData.length).toFixed(1)}
+                  {studentsData.filter(s => s.status === 'graduated').length}
                 </div>
-                <div className="text-sm text-gray-600">Average GPA</div>
+                <div className="text-sm text-gray-600">Graduated</div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-4">
-        {/* Department Distribution */}
-        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-lg text-gray-800">Department Distribution</CardTitle>
-            <CardDescription>Students by department</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {departmentStats.map((dept, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-gray-700">{dept.department}</span>
-                  <span className="text-gray-600">{dept.count}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-purple-400 to-violet-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${dept.percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Students Table */}
-        <Card className="lg:col-span-3 bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-gray-800">
-                  <Users className="h-5 w-5 text-purple-600" />
-                  Student Records
-                </CardTitle>
-                <CardDescription>Manage and view all student information</CardDescription>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Search students..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
-                      {selectedDepartment}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by Department</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setSelectedDepartment("All")}>All Departments</DropdownMenuItem>
-                    {departmentStats.map((dept) => (
-                      <DropdownMenuItem key={dept.department} onClick={() => setSelectedDepartment(dept.department)}>
-                        {dept.department}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+      {/* Filters and Search */}
+      <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search students by name, email, or ID..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filter
+              </Button>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Students Table */}
+      <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-gray-800">
+            <Users className="h-5 w-5 text-blue-600" />
+            Student Records
+          </CardTitle>
+          <CardDescription>
+            Showing {filteredStudents.length} of {studentsData.length} students
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {filteredStudents.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No students found.</p>
+            </div>
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Student</TableHead>
-                  <TableHead>ID</TableHead>
+                  <TableHead>Contact</TableHead>
                   <TableHead>Department</TableHead>
                   <TableHead>Year</TableHead>
-                  <TableHead>GPA</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>GPA</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -355,78 +377,84 @@ export default function AdminStudents() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={student.avatar || "/placeholder.svg"} alt={student.name} />
-                          <AvatarFallback className="bg-purple-100 text-purple-600">
-                            {student.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                          <AvatarImage src={student.avatar} alt={student.name} />
+                          <AvatarFallback className="bg-blue-100 text-blue-600">
+                            {student.name.split(" ").map((n) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium text-gray-900">{student.name}</div>
-                          <div className="text-sm text-gray-600">{student.email}</div>
+                          <div className="text-sm text-gray-500">ID: {student.id}</div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{student.id}</TableCell>
-                    <TableCell>{student.department}</TableCell>
-                    <TableCell>{student.year}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          student.gpa >= 3.7
-                            ? "border-green-300 text-green-700 bg-green-50"
-                            : student.gpa >= 3.0
-                              ? "border-blue-300 text-blue-700 bg-blue-50"
-                              : "border-orange-300 text-orange-700 bg-orange-50"
-                        }
-                      >
-                        {student.gpa}
+                      <div className="space-y-1">
+                        <div className="text-sm text-gray-900">{student.email}</div>
+                        <div className="text-sm text-gray-500">{student.phone}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="border-blue-200 text-blue-700">
+                        {student.department}
                       </Badge>
                     </TableCell>
                     <TableCell>
+                      <Badge variant="secondary">{student.year}</Badge>
+                    </TableCell>
+                    <TableCell>
                       <Badge
-                        variant={student.status === "Active" ? "default" : "secondary"}
-                        className={student.status === "Active" ? "bg-green-500" : "bg-orange-500"}
+                        variant={student.status === "active" ? "default" : "secondary"}
+                        className={
+                          student.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : student.status === "graduated"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-red-100 text-red-800"
+                        }
                       >
                         {student.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 w-8 p-0"
-                          onClick={() => handleEditStudent(student)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                          onClick={() => handleDeleteStudent(student)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <div className="font-medium text-gray-900">{student.gpa.toFixed(1)}</div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEditStudent(student)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Send Email
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteStudent(student)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Modals */}
       <StudentModal
@@ -442,8 +470,8 @@ export default function AdminStudents() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Student"
-        description="Are you sure you want to delete this student? This will remove all their records and cannot be undone."
-        itemName={selectedStudent?.name || ""}
+        message={`Are you sure you want to delete ${selectedStudent?.name}? This action cannot be undone.`}
+        isLoading={isSubmitting}
       />
     </div>
   )

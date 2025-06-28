@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
+import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff, GraduationCap, User, Shield, Users } from "lucide-react"
 
@@ -11,25 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
-// Demo credentials for different user types
-const demoCredentials = {
-  student: {
-    email: "student@demo.com",
-    password: "student123",
-    redirect: "/student",
-  },
-  lecturer: {
-    email: "lecturer@demo.com",
-    password: "lecturer123",
-    redirect: "/lecturer",
-  },
-  admin: {
-    email: "admin@demo.com",
-    password: "admin123",
-    redirect: "/admin",
-  },
-}
+import { useAuth } from "../../contexts/AuthContext"
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
@@ -39,41 +20,32 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const navigate = useNavigate()
+  const { signIn, profile } = useAuth()
+
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (profile) {
+      const redirectMap = {
+        student: "/student",
+        lecturer: "/lecturer",
+        admin: "/admin",
+      }
+      navigate(redirectMap[profile.role] || "/")
+    }
+  }, [profile, navigate])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const { error } = await signIn(email, password)
 
-    const credentials = demoCredentials[userType as keyof typeof demoCredentials]
-
-    if (email === credentials.email && password === credentials.password) {
-      // Store user info in localStorage (in real app, use proper auth state management)
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          email,
-          userType,
-          isAuthenticated: true,
-        }),
-      )
-
-      navigate(credentials.redirect)
-    } else {
-      setError("Invalid credentials. Please use the demo credentials provided.")
+    if (error) {
+      setError(error.message || "Failed to sign in. Please check your credentials.")
     }
 
     setIsLoading(false)
-  }
-
-  const handleDemoLogin = (type: keyof typeof demoCredentials) => {
-    const credentials = demoCredentials[type]
-    setEmail(credentials.email)
-    setPassword(credentials.password)
-    setUserType(type)
   }
 
   const userTypeConfig = {
@@ -114,24 +86,25 @@ export default function Login() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 items-start">
-          {/* Demo Credentials Card */}
+          {/* Info Card */}
           <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-blue-600" />
-                Demo Credentials
+                Portal Information
               </CardTitle>
-              <CardDescription>Click on any role below to auto-fill login credentials</CardDescription>
+              <CardDescription>Choose your role to access the appropriate portal</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {Object.entries(demoCredentials).map(([type, creds]) => {
-                const config = userTypeConfig[type as keyof typeof userTypeConfig]
+              {Object.entries(userTypeConfig).map(([type, config]) => {
                 const Icon = config.icon
                 return (
                   <div
                     key={type}
-                    onClick={() => handleDemoLogin(type as keyof typeof demoCredentials)}
-                    className="p-4 rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-all hover:shadow-md bg-white/50"
+                    onClick={() => setUserType(type)}
+                    className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md bg-white/50 ${
+                      userType === type ? 'border-blue-300 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+                    }`}
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <div className={`p-2 rounded-lg bg-gradient-to-r ${config.color} text-white`}>
@@ -141,10 +114,6 @@ export default function Login() {
                         <h3 className="font-semibold capitalize">{type}</h3>
                         <p className="text-sm text-gray-600">{config.description}</p>
                       </div>
-                    </div>
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <div>Email: {creds.email}</div>
-                      <div>Password: {creds.password}</div>
                     </div>
                   </div>
                 )

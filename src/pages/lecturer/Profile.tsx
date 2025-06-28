@@ -1,63 +1,145 @@
 "use client"
 
-import { User, Mail, Phone, MapPin, Calendar, Edit, Camera, Save, X } from "lucide-react"
-import { useState } from "react"
+import { User, Mail, Phone, MapPin, Calendar, Edit, Camera, Save, X, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { profileService } from "@/lib/dataService"
+import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
-const lecturerData = {
-  name: "Dr. Sarah Mitchell",
-  title: "Associate Professor",
-  department: "Computer Science Department",
-  email: "sarah.mitchell@university.edu",
-  phone: "+1 (555) 123-4567",
-  office: "CS Building, Room 301",
-  joinDate: "September 2018",
-  employeeId: "EMP001",
-  avatar: "/placeholder.svg?height=120&width=120",
-  bio: "Dr. Sarah Mitchell is an Associate Professor in the Computer Science Department with over 10 years of experience in software engineering and data structures. She holds a Ph.D. in Computer Science from MIT and has published numerous papers in top-tier conferences.",
-  specializations: ["Data Structures", "Algorithms", "Software Engineering", "Database Systems"],
-  education: [
-    {
-      degree: "Ph.D. in Computer Science",
-      institution: "Massachusetts Institute of Technology",
-      year: "2015",
-    },
-    {
-      degree: "M.S. in Computer Science",
-      institution: "Stanford University",
-      year: "2012",
-    },
-    {
-      degree: "B.S. in Computer Science",
-      institution: "University of California, Berkeley",
-      year: "2010",
-    },
-  ],
-  officeHours: [
-    { day: "Monday", time: "2:00 PM - 4:00 PM" },
-    { day: "Wednesday", time: "10:00 AM - 12:00 PM" },
-    { day: "Friday", time: "1:00 PM - 3:00 PM" },
-  ],
+interface ProfileData {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  phone?: string
+  office_location?: string
+  title?: string
+  department?: string
+  bio?: string
+  avatar_url?: string
+  created_at: string
 }
 
 export default function LecturerProfile() {
+  const { user } = useAuth()
+  const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState(lecturerData)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [profileData, setProfileData] = useState<ProfileData | null>(null)
+  const [formData, setFormData] = useState<Partial<ProfileData>>({})
 
-  const handleSave = () => {
-    // Save logic here
-    setIsEditing(false)
+  useEffect(() => {
+    if (user) {
+      fetchProfile()
+    }
+  }, [user])
+
+  const fetchProfile = async () => {
+    if (!user) return
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { data: profile, error: profileError } = await profileService.getProfile(user.id)
+      
+      if (profileError) {
+        setError(profileError.message)
+        return
+      }
+
+      if (profile) {
+        setProfileData(profile)
+        setFormData(profile)
+      }
+    } catch (err) {
+      setError("Failed to fetch profile data")
+      console.error("Error fetching profile data:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!user || !profileData) return
+
+    try {
+      const { error } = await profileService.updateProfile(user.id, formData)
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      })
+
+      setIsEditing(false)
+      fetchProfile() // Refresh the data
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleCancel = () => {
-    setFormData(lecturerData)
+    if (profileData) {
+      setFormData(profileData)
+    }
     setIsEditing(false)
   }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading profile...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchProfile}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profileData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Profile not found</p>
+          <Button onClick={fetchProfile}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
+
+  const fullName = `${profileData.first_name} ${profileData.last_name}`
+  const initials = `${profileData.first_name?.[0] || ''}${profileData.last_name?.[0] || ''}`
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
@@ -95,8 +177,8 @@ export default function LecturerProfile() {
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">
                 <Avatar className="h-32 w-32">
-                  <AvatarImage src={formData.avatar || "/placeholder.svg"} alt={formData.name} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600 text-2xl">SM</AvatarFallback>
+                  <AvatarImage src={profileData.avatar_url || "/placeholder.svg"} alt={fullName} />
+                  <AvatarFallback className="bg-blue-100 text-blue-600 text-2xl">{initials}</AvatarFallback>
                 </Avatar>
                 {isEditing && (
                   <Button size="sm" className="absolute bottom-0 right-0 rounded-full h-8 w-8 p-0" variant="outline">
@@ -105,9 +187,9 @@ export default function LecturerProfile() {
                 )}
               </div>
               <div className="text-center space-y-2">
-                <h2 className="text-xl font-bold text-gray-900">{formData.name}</h2>
-                <p className="text-blue-600 font-medium">{formData.title}</p>
-                <p className="text-gray-600">{formData.department}</p>
+                <h2 className="text-xl font-bold text-gray-900">{fullName}</h2>
+                <p className="text-blue-600 font-medium">{profileData.title || 'Lecturer'}</p>
+                <p className="text-gray-600">{profileData.department || 'Department'}</p>
                 <Badge className="bg-green-100 text-green-800">Active</Badge>
               </div>
             </div>
@@ -126,27 +208,54 @@ export default function LecturerProfile() {
           <CardContent className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="first_name">First Name</Label>
                 {isEditing ? (
                   <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    id="first_name"
+                    value={formData.first_name || ''}
+                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                   />
                 ) : (
-                  <p className="text-gray-900">{formData.name}</p>
+                  <p className="text-gray-900">{profileData.first_name}</p>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                {isEditing ? (
+                  <Input
+                    id="last_name"
+                    value={formData.last_name || ''}
+                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                  />
+                ) : (
+                  <p className="text-gray-900">{profileData.last_name}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 {isEditing ? (
                   <Input
                     id="title"
-                    value={formData.title}
+                    value={formData.title || ''}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   />
                 ) : (
-                  <p className="text-gray-900">{formData.title}</p>
+                  <p className="text-gray-900">{profileData.title || 'Not specified'}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="department">Department</Label>
+                {isEditing ? (
+                  <Input
+                    id="department"
+                    value={formData.department || ''}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  />
+                ) : (
+                  <p className="text-gray-900">{profileData.department || 'Not specified'}</p>
                 )}
               </div>
             </div>
@@ -160,11 +269,11 @@ export default function LecturerProfile() {
                     <Input
                       id="email"
                       type="email"
-                      value={formData.email}
+                      value={formData.email || ''}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
                   ) : (
-                    <p className="text-gray-900">{formData.email}</p>
+                    <p className="text-gray-900">{profileData.email}</p>
                   )}
                 </div>
               </div>
@@ -175,11 +284,11 @@ export default function LecturerProfile() {
                   {isEditing ? (
                     <Input
                       id="phone"
-                      value={formData.phone}
+                      value={formData.phone || ''}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     />
                   ) : (
-                    <p className="text-gray-900">{formData.phone}</p>
+                    <p className="text-gray-900">{profileData.phone || 'Not specified'}</p>
                   )}
                 </div>
               </div>
@@ -187,97 +296,47 @@ export default function LecturerProfile() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="office">Office Location</Label>
+                <Label htmlFor="office_location">Office Location</Label>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-gray-500" />
                   {isEditing ? (
                     <Input
-                      id="office"
-                      value={formData.office}
-                      onChange={(e) => setFormData({ ...formData, office: e.target.value })}
+                      id="office_location"
+                      value={formData.office_location || ''}
+                      onChange={(e) => setFormData({ ...formData, office_location: e.target.value })}
                     />
                   ) : (
-                    <p className="text-gray-900">{formData.office}</p>
+                    <p className="text-gray-900">{profileData.office_location || 'Not specified'}</p>
                   )}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="joinDate">Join Date</Label>
+                <Label htmlFor="join_date">Join Date</Label>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-gray-900">{formData.joinDate}</p>
+                  <p className="text-gray-900">
+                    {profileData.created_at ? new Date(profileData.created_at).toLocaleDateString() : 'Not specified'}
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bio">Biography</Label>
+              <Label htmlFor="bio">Bio</Label>
               {isEditing ? (
-                <textarea
+                <Input
                   id="bio"
-                  className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.bio}
+                  value={formData.bio || ''}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="Tell us about yourself..."
                 />
               ) : (
-                <p className="text-gray-700">{formData.bio}</p>
+                <p className="text-gray-900">{profileData.bio || 'No bio available'}</p>
               )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Education */}
-        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-gray-800">Education</CardTitle>
-            <CardDescription>Academic qualifications and degrees</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {formData.education.map((edu, index) => (
-              <div key={index} className="p-4 rounded-lg border border-gray-200">
-                <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
-                <p className="text-blue-600">{edu.institution}</p>
-                <p className="text-sm text-gray-500">{edu.year}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Office Hours */}
-        <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-gray-800">Office Hours</CardTitle>
-            <CardDescription>Available times for student consultations</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {formData.officeHours.map((hour, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
-                <span className="font-medium text-gray-900">{hour.day}</span>
-                <span className="text-blue-600">{hour.time}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Specializations */}
-      <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-gray-800">Specializations</CardTitle>
-          <CardDescription>Areas of expertise and research interests</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {formData.specializations.map((spec, index) => (
-              <Badge key={index} variant="outline" className="px-3 py-1">
-                {spec}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
