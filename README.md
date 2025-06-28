@@ -5,18 +5,21 @@ A comprehensive educational platform built with React, TypeScript, and Vite, fea
 ## 🚀 Features
 
 ### 👨‍🎓 Student Dashboard
+
 - **Academic Overview** - GPA tracking, course progress, upcoming assignments
 - **Course Management** - Enrollment, schedules, materials access
 - **Communication** - Messages, notifications, announcements
 - **Learning Tools** - Study plans, calendar integration, resource library
 
 ### 👨‍🏫 Lecturer Dashboard
+
 - **Course Management** - Create/edit courses, manage enrollments
 - **Assessment Tools** - Assignment creation, grading, quiz management
 - **Student Tracking** - Attendance, performance analytics, progress reports
 - **Communication** - Announcements, messaging, feedback systems
 
 ### 👨‍💼 Admin Dashboard
+
 - **User Management** - Students, lecturers, staff administration
 - **Academic Management** - Courses, faculties, departments, registrations
 - **System Analytics** - Comprehensive reporting and statistics
@@ -59,41 +62,45 @@ A comprehensive educational platform built with React, TypeScript, and Vite, fea
 
 \`\`\`
 src/
-├── components/          # Reusable UI components
-│   ├── ui/             # shadcn/ui components
-│   └── modals/         # Modal components for CRUD operations
-├── layouts/            # Layout components for different user roles
-├── pages/              # Page components organized by user role
-│   ├── admin/          # Admin dashboard pages
-│   ├── lecturer/       # Lecturer dashboard pages
-│   ├── student/        # Student dashboard pages
-│   └── auth/           # Authentication pages
-├── hooks/              # Custom React hooks
-├── lib/                # Utility functions and configurations
-└── main.tsx           # Application entry point
+├── components/ # Reusable UI components
+│ ├── ui/ # shadcn/ui components
+│ └── modals/ # Modal components for CRUD operations
+├── layouts/ # Layout components for different user roles
+├── pages/ # Page components organized by user role
+│ ├── admin/ # Admin dashboard pages
+│ ├── lecturer/ # Lecturer dashboard pages
+│ ├── student/ # Student dashboard pages
+│ └── auth/ # Authentication pages
+├── hooks/ # Custom React hooks
+├── lib/ # Utility functions and configurations
+└── main.tsx # Application entry point
 \`\`\`
 
 ## 🎯 Key Features
 
 ### CRUD Operations
+
 - **Create**: Add new students, lecturers, courses with form validation
 - **Read**: View and search through all records with filtering
 - **Update**: Edit existing records with pre-filled forms
 - **Delete**: Safe deletion with confirmation dialogs
 
 ### Form Validation
+
 - Real-time validation with Zod schemas
 - Field-specific error messages
 - Required field enforcement
 - Email format validation
 
 ### Responsive Design
+
 - Mobile-first approach
 - Adaptive layouts for all screen sizes
 - Touch-friendly interface elements
 - Consistent design system
 
 ### User Experience
+
 - Toast notifications for all operations
 - Loading states and smooth transitions
 - Keyboard navigation support
@@ -110,6 +117,7 @@ src/
 ## 🔧 Configuration
 
 ### Environment Variables
+
 Create a `.env` file in the root directory:
 \`\`\`env
 VITE_APP_TITLE=AMEU Smart School System
@@ -117,6 +125,7 @@ VITE_API_URL=http://localhost:3001/api
 \`\`\`
 
 ### Customization
+
 - **Colors**: Modify `tailwind.config.js` for theme customization
 - **Components**: Extend shadcn/ui components in `src/components/ui/`
 - **Layouts**: Customize layouts in `src/layouts/`

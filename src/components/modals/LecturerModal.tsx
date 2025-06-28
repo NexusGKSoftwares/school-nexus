@@ -1,42 +1,66 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { User, Mail, Phone, GraduationCap, Calendar, Award } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
+import { useState, useEffect } from "react";
+import {
+  User,
+  Mail,
+  Phone,
+  GraduationCap,
+  Calendar,
+  Award,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export interface Lecturer {
-  id?: string
-  name: string
-  email: string
-  phone: string
-  department: string
-  position: string
-  experience: string
-  courses: number
-  students: number
-  status: string
-  joinDate: string
-  specialization?: string
-  bio?: string
-  avatar?: string
+  id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  department: string;
+  position: string;
+  experience: string;
+  courses: number;
+  students: number;
+  status: string;
+  joinDate: string;
+  specialization?: string;
+  bio?: string;
+  avatar?: string;
 }
 
 interface LecturerModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (lecturer: Lecturer) => Promise<void>
-  lecturer?: Lecturer | null
-  mode: "create" | "edit"
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (lecturer: Lecturer) => Promise<void>;
+  lecturer?: Lecturer | null;
+  mode: "create" | "edit";
 }
 
-export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode }: LecturerModalProps) {
+export default function LecturerModal({
+  isOpen,
+  onClose,
+  onSave,
+  lecturer,
+  mode,
+}: LecturerModalProps) {
   const [formData, setFormData] = useState<Lecturer>({
     name: "",
     email: "",
@@ -50,13 +74,13 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
     joinDate: new Date().toISOString().split("T")[0],
     specialization: "",
     bio: "",
-  })
+  });
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (lecturer && mode === "edit") {
-      setFormData(lecturer)
+      setFormData(lecturer);
     } else {
       setFormData({
         name: "",
@@ -71,40 +95,41 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
         joinDate: new Date().toISOString().split("T")[0],
         specialization: "",
         bio: "",
-      })
+      });
     }
-    setErrors({})
-  }, [lecturer, mode, isOpen])
+    setErrors({});
+  }, [lecturer, mode, isOpen]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) newErrors.name = "Name is required"
-    if (!formData.email.trim()) newErrors.email = "Email is required"
-    if (!formData.email.includes("@")) newErrors.email = "Invalid email format"
-    if (!formData.phone.trim()) newErrors.phone = "Phone is required"
-    if (!formData.department) newErrors.department = "Department is required"
-    if (!formData.position) newErrors.position = "Position is required"
-    if (!formData.experience.trim()) newErrors.experience = "Experience is required"
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    if (!formData.email.includes("@")) newErrors.email = "Invalid email format";
+    if (!formData.phone.trim()) newErrors.phone = "Phone is required";
+    if (!formData.department) newErrors.department = "Department is required";
+    if (!formData.position) newErrors.position = "Position is required";
+    if (!formData.experience.trim())
+      newErrors.experience = "Experience is required";
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (validateForm()) {
-      onSave(formData)
-      onClose()
+      onSave(formData);
+      onClose();
     }
-  }
+  };
 
   const handleChange = (field: keyof Lecturer, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -131,7 +156,9 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                 placeholder="Enter full name"
                 className={errors.name ? "border-red-500" : ""}
               />
-              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name}</p>
+              )}
             </div>
 
             {/* Email */}
@@ -148,7 +175,9 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                 placeholder="Enter email address"
                 className={errors.email ? "border-red-500" : ""}
               />
-              {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email}</p>
+              )}
             </div>
 
             {/* Phone */}
@@ -164,7 +193,9 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                 placeholder="Enter phone number"
                 className={errors.phone ? "border-red-500" : ""}
               />
-              {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
+              {errors.phone && (
+                <p className="text-sm text-red-500">{errors.phone}</p>
+              )}
             </div>
 
             {/* Department */}
@@ -173,12 +204,19 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                 <GraduationCap className="h-4 w-4" />
                 Department *
               </Label>
-              <Select value={formData.department} onValueChange={(value) => handleChange("department", value)}>
-                <SelectTrigger className={errors.department ? "border-red-500" : ""}>
+              <Select
+                value={formData.department}
+                onValueChange={(value) => handleChange("department", value)}
+              >
+                <SelectTrigger
+                  className={errors.department ? "border-red-500" : ""}
+                >
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Computer Science">Computer Science</SelectItem>
+                  <SelectItem value="Computer Science">
+                    Computer Science
+                  </SelectItem>
                   <SelectItem value="Engineering">Engineering</SelectItem>
                   <SelectItem value="Mathematics">Mathematics</SelectItem>
                   <SelectItem value="Physics">Physics</SelectItem>
@@ -186,7 +224,9 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                   <SelectItem value="English">English</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.department && <p className="text-sm text-red-500">{errors.department}</p>}
+              {errors.department && (
+                <p className="text-sm text-red-500">{errors.department}</p>
+              )}
             </div>
 
             {/* Position */}
@@ -195,19 +235,32 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                 <Award className="h-4 w-4" />
                 Position *
               </Label>
-              <Select value={formData.position} onValueChange={(value) => handleChange("position", value)}>
-                <SelectTrigger className={errors.position ? "border-red-500" : ""}>
+              <Select
+                value={formData.position}
+                onValueChange={(value) => handleChange("position", value)}
+              >
+                <SelectTrigger
+                  className={errors.position ? "border-red-500" : ""}
+                >
                   <SelectValue placeholder="Select position" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Professor">Professor</SelectItem>
-                  <SelectItem value="Associate Professor">Associate Professor</SelectItem>
-                  <SelectItem value="Assistant Professor">Assistant Professor</SelectItem>
+                  <SelectItem value="Associate Professor">
+                    Associate Professor
+                  </SelectItem>
+                  <SelectItem value="Assistant Professor">
+                    Assistant Professor
+                  </SelectItem>
                   <SelectItem value="Lecturer">Lecturer</SelectItem>
-                  <SelectItem value="Senior Lecturer">Senior Lecturer</SelectItem>
+                  <SelectItem value="Senior Lecturer">
+                    Senior Lecturer
+                  </SelectItem>
                 </SelectContent>
               </Select>
-              {errors.position && <p className="text-sm text-red-500">{errors.position}</p>}
+              {errors.position && (
+                <p className="text-sm text-red-500">{errors.position}</p>
+              )}
             </div>
 
             {/* Experience */}
@@ -220,7 +273,9 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                 placeholder="e.g., 10 years"
                 className={errors.experience ? "border-red-500" : ""}
               />
-              {errors.experience && <p className="text-sm text-red-500">{errors.experience}</p>}
+              {errors.experience && (
+                <p className="text-sm text-red-500">{errors.experience}</p>
+              )}
             </div>
 
             {/* Courses */}
@@ -231,7 +286,9 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                 type="number"
                 min="0"
                 value={formData.courses}
-                onChange={(e) => handleChange("courses", Number.parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange("courses", Number.parseInt(e.target.value) || 0)
+                }
                 placeholder="Enter number of courses"
               />
             </div>
@@ -244,7 +301,9 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
                 type="number"
                 min="0"
                 value={formData.students}
-                onChange={(e) => handleChange("students", Number.parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange("students", Number.parseInt(e.target.value) || 0)
+                }
                 placeholder="Enter number of students"
               />
             </div>
@@ -252,7 +311,10 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
             {/* Status */}
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleChange("status", value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -314,5 +376,5 @@ export default function LecturerModal({ isOpen, onClose, onSave, lecturer, mode 
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   User,
@@ -18,13 +18,13 @@ import {
   LogOut,
   GraduationCap,
   UserCheck,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -38,8 +38,8 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { useAuth } from "../contexts/AuthContext"
+} from "@/components/ui/sidebar";
+import { useAuth } from "../contexts/AuthContext";
 
 // Navigation items for lecturer
 const navigationItems = [
@@ -106,10 +106,10 @@ const navigationItems = [
     url: "/lecturer/settings",
     icon: Settings,
   },
-]
+];
 
 function AppSidebar() {
-  const location = useLocation()
+  const location = useLocation();
 
   return (
     <Sidebar variant="inset" className="border-r-0">
@@ -122,8 +122,12 @@ function AppSidebar() {
                   <GraduationCap className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-bold text-gray-900">EduPlatform</span>
-                  <span className="truncate text-xs text-blue-600">Lecturer Portal</span>
+                  <span className="truncate font-bold text-gray-900">
+                    EduPlatform
+                  </span>
+                  <span className="truncate text-xs text-blue-600">
+                    Lecturer Portal
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -146,7 +150,9 @@ function AppSidebar() {
                       <item.icon className="size-5" />
                       <span className="font-medium">{item.title}</span>
                       {item.badge && (
-                        <Badge className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5">{item.badge}</Badge>
+                        <Badge className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5">
+                          {item.badge}
+                        </Badge>
                       )}
                     </Link>
                   </SidebarMenuButton>
@@ -158,17 +164,17 @@ function AppSidebar() {
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
 
 export default function LecturerLayout() {
-  const navigate = useNavigate()
-  const { profile, signOut } = useAuth()
+  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
 
   const handleLogout = async () => {
-    await signOut()
-    navigate("/auth/login")
-  }
+    await signOut();
+    navigate("/auth/login");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -178,7 +184,10 @@ export default function LecturerLayout() {
           {/* Top Navbar */}
           <header className="flex h-16 shrink-0 items-center gap-4 border-b border-blue-100 bg-white/80 backdrop-blur-sm px-6">
             <SidebarTrigger className="-ml-1 text-blue-600" />
-            <Separator orientation="vertical" className="mr-2 h-4 bg-blue-200" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 h-4 bg-blue-200"
+            />
 
             <div className="flex flex-1 items-center gap-4">
               <div className="relative flex-1 max-w-md">
@@ -189,7 +198,11 @@ export default function LecturerLayout() {
                 />
               </div>
 
-              <Button variant="outline" size="icon" className="relative border-blue-200 hover:bg-blue-50">
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative border-blue-200 hover:bg-blue-50"
+              >
                 <Bell className="h-4 w-4 text-blue-600" />
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white p-0 flex items-center justify-center">
                   3
@@ -203,12 +216,20 @@ export default function LecturerLayout() {
 
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8 ring-2 ring-blue-200">
-                  <AvatarImage src="/placeholder.svg" alt={profile?.email || "User"} />
+                  <AvatarImage
+                    src="/placeholder.svg"
+                    alt={profile?.email || "User"}
+                  />
                   <AvatarFallback className="bg-blue-100 text-blue-600">
                     {profile?.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
-                <Button variant="ghost" size="icon" className="text-blue-600 hover:bg-blue-50" onClick={handleLogout}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-blue-600 hover:bg-blue-50"
+                  onClick={handleLogout}
+                >
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
@@ -219,5 +240,5 @@ export default function LecturerLayout() {
         </SidebarInset>
       </SidebarProvider>
     </div>
-  )
+  );
 }

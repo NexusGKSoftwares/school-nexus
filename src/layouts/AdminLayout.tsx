@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Users,
   GraduationCap,
@@ -25,13 +25,13 @@ import {
   Bell,
   LogOut,
   Shield,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -46,8 +46,8 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { useAuth } from "../contexts/AuthContext"
+} from "@/components/ui/sidebar";
+import { useAuth } from "../contexts/AuthContext";
 
 // Navigation items for admin
 const navigationItems = [
@@ -179,10 +179,10 @@ const navigationItems = [
       },
     ],
   },
-]
+];
 
 function AppSidebar() {
-  const location = useLocation()
+  const location = useLocation();
 
   return (
     <Sidebar variant="inset" className="border-r-0">
@@ -195,8 +195,12 @@ function AppSidebar() {
                   <Shield className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-bold text-gray-900">EduPlatform</span>
-                  <span className="truncate text-xs text-purple-600">Admin Portal</span>
+                  <span className="truncate font-bold text-gray-900">
+                    EduPlatform
+                  </span>
+                  <span className="truncate text-xs text-purple-600">
+                    Admin Portal
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -207,7 +211,9 @@ function AppSidebar() {
       <SidebarContent className="bg-white/80 backdrop-blur-sm">
         {navigationItems.map((group) => (
           <SidebarGroup key={group.title}>
-            <SidebarGroupLabel className="text-purple-600 font-semibold">{group.title}</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-purple-600 font-semibold">
+              {group.title}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
                 {group.items.map((item) => (
@@ -219,9 +225,13 @@ function AppSidebar() {
                     >
                       <Link to={item.url} className="flex items-center gap-3">
                         <item.icon className="size-4" />
-                        <span className="font-medium text-sm">{item.title}</span>
+                        <span className="font-medium text-sm">
+                          {item.title}
+                        </span>
                         {item.badge && (
-                          <Badge className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5">{item.badge}</Badge>
+                          <Badge className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5">
+                            {item.badge}
+                          </Badge>
                         )}
                       </Link>
                     </SidebarMenuButton>
@@ -234,17 +244,17 @@ function AppSidebar() {
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
 
 export default function AdminLayout() {
-  const navigate = useNavigate()
-  const { profile, signOut } = useAuth()
+  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
 
   const handleLogout = async () => {
-    await signOut()
-    navigate("/auth/login")
-  }
+    await signOut();
+    navigate("/auth/login");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50">
@@ -254,7 +264,10 @@ export default function AdminLayout() {
           {/* Top Navbar */}
           <header className="flex h-16 shrink-0 items-center gap-4 border-b border-purple-100 bg-white/80 backdrop-blur-sm px-6">
             <SidebarTrigger className="-ml-1 text-purple-600" />
-            <Separator orientation="vertical" className="mr-2 h-4 bg-purple-200" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 h-4 bg-purple-200"
+            />
 
             <div className="flex flex-1 items-center gap-4">
               <div className="relative flex-1 max-w-md">
@@ -265,7 +278,11 @@ export default function AdminLayout() {
                 />
               </div>
 
-              <Button variant="outline" size="icon" className="relative border-purple-200 hover:bg-purple-50">
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative border-purple-200 hover:bg-purple-50"
+              >
                 <Bell className="h-4 w-4 text-purple-600" />
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white p-0 flex items-center justify-center">
                   5
@@ -274,7 +291,10 @@ export default function AdminLayout() {
 
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8 ring-2 ring-purple-200">
-                  <AvatarImage src="/placeholder.svg" alt={profile?.email || "User"} />
+                  <AvatarImage
+                    src="/placeholder.svg"
+                    alt={profile?.email || "User"}
+                  />
                   <AvatarFallback className="bg-purple-100 text-purple-600">
                     {profile?.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
@@ -295,5 +315,5 @@ export default function AdminLayout() {
         </SidebarInset>
       </SidebarProvider>
     </div>
-  )
+  );
 }

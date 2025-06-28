@@ -18,15 +18,28 @@ import {
   GraduationCap,
   UserCheck,
   Loader2,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Sidebar,
   SidebarContent,
@@ -40,10 +53,14 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { useAuth } from "../../contexts/AuthContext"
-import { lecturerService, courseService, announcementService } from "../../lib/dataService"
-import { useState, useEffect } from "react"
+} from "@/components/ui/sidebar";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  lecturerService,
+  courseService,
+  announcementService,
+} from "../../lib/dataService";
+import { useState, useEffect } from "react";
 
 // Navigation items for lecturer
 const navigationItems = [
@@ -111,43 +128,43 @@ const navigationItems = [
     url: "#",
     icon: Settings,
   },
-]
+];
 
 interface DashboardOverview {
-  assignedCourses: number
-  studentsTaught: number
-  classesToday: number
-  pendingGrading: number
+  assignedCourses: number;
+  studentsTaught: number;
+  classesToday: number;
+  pendingGrading: number;
 }
 
 interface Course {
-  id: string
-  title: string
-  code: string
-  classSize: number
-  schedule: string
-  room?: string
+  id: string;
+  title: string;
+  code: string;
+  classSize: number;
+  schedule: string;
+  room?: string;
 }
 
 interface UpcomingClass {
-  course: string
-  time: string
-  duration: string
-  method: string
-  room: string
+  course: string;
+  time: string;
+  duration: string;
+  method: string;
+  room: string;
 }
 
 interface RecentMessage {
-  from: string
-  subject: string
-  time: string
-  unread: boolean
+  from: string;
+  subject: string;
+  time: string;
+  unread: boolean;
 }
 
 interface Announcement {
-  title: string
-  date: string
-  priority: string
+  title: string;
+  date: string;
+  priority: string;
 }
 
 function AppSidebar() {
@@ -185,99 +202,113 @@ function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
 
 export default function LecturerDashboard() {
-  const { profile } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { profile } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [overview, setOverview] = useState<DashboardOverview>({
     assignedCourses: 0,
     studentsTaught: 0,
     classesToday: 0,
     pendingGrading: 0,
-  })
-  const [courses, setCourses] = useState<Course[]>([])
-  const [upcomingClasses, setUpcomingClasses] = useState<UpcomingClass[]>([])
-  const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([])
-  const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  });
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [upcomingClasses, setUpcomingClasses] = useState<UpcomingClass[]>([]);
+  const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   useEffect(() => {
     if (profile) {
-      fetchLecturerData()
+      fetchLecturerData();
     }
-  }, [profile])
+  }, [profile]);
 
   const fetchLecturerData = async () => {
-    if (!profile) return
+    if (!profile) return;
 
     try {
-      setLoading(true)
-      setError(null)
-      
+      setLoading(true);
+      setError(null);
+
       // Get lecturer record
-      const { data: lecturerRecord, error: lecturerError } = await lecturerService.getLecturerByProfile(profile.id)
-      
+      const { data: lecturerRecord, error: lecturerError } =
+        await lecturerService.getLecturerByProfile(profile.id);
+
       if (lecturerError) {
-        setError(lecturerError.message)
-        return
+        setError(lecturerError.message);
+        return;
       }
 
       if (lecturerRecord) {
         // Fetch courses for this lecturer
-        const { data: lecturerCourses, error: coursesError } = await courseService.getCoursesByLecturer(lecturerRecord.id)
-        
+        const { data: lecturerCourses, error: coursesError } =
+          await courseService.getCoursesByLecturer(lecturerRecord.id);
+
         if (coursesError) {
-          setError(coursesError.message)
-          return
+          setError(coursesError.message);
+          return;
         }
 
         if (lecturerCourses) {
           // Transform courses data
-          const transformedCourses: Course[] = lecturerCourses.map(course => ({
-            id: course.id,
-            title: course.name,
-            code: course.code,
-            classSize: course.enrolled_students || 0,
-            schedule: course.schedule || "TBD",
-            room: course.room || "TBD",
-          }))
-          setCourses(transformedCourses)
+          const transformedCourses: Course[] = lecturerCourses.map(
+            (course) => ({
+              id: course.id,
+              title: course.name,
+              code: course.code,
+              classSize: course.enrolled_students || 0,
+              schedule: course.schedule || "TBD",
+              room: course.room || "TBD",
+            }),
+          );
+          setCourses(transformedCourses);
 
           // Calculate overview stats
-          const totalStudents = transformedCourses.reduce((sum, course) => sum + course.classSize, 0)
-          const assignedCourses = transformedCourses.length
-          
+          const totalStudents = transformedCourses.reduce(
+            (sum, course) => sum + course.classSize,
+            0,
+          );
+          const assignedCourses = transformedCourses.length;
+
           setOverview({
             assignedCourses,
             studentsTaught: totalStudents,
             classesToday: Math.min(assignedCourses, 3), // Mock data for classes today
             pendingGrading: Math.floor(Math.random() * 20) + 5, // Mock data for pending grading
-          })
+          });
 
           // Generate upcoming classes based on courses
-          const mockUpcomingClasses: UpcomingClass[] = transformedCourses.slice(0, 3).map((course, index) => ({
-            course: course.title,
-            time: index === 0 ? "10:00 AM" : index === 1 ? "1:00 PM" : "2:00 PM",
-            duration: "1h 30m",
-            method: index === 1 ? "Online" : "In-person",
-            room: index === 1 ? "Zoom Meeting" : course.room || "TBD",
-          }))
-          setUpcomingClasses(mockUpcomingClasses)
+          const mockUpcomingClasses: UpcomingClass[] = transformedCourses
+            .slice(0, 3)
+            .map((course, index) => ({
+              course: course.title,
+              time:
+                index === 0 ? "10:00 AM" : index === 1 ? "1:00 PM" : "2:00 PM",
+              duration: "1h 30m",
+              method: index === 1 ? "Online" : "In-person",
+              room: index === 1 ? "Zoom Meeting" : course.room || "TBD",
+            }));
+          setUpcomingClasses(mockUpcomingClasses);
         }
       }
 
       // Fetch announcements
-      const { data: announcementsData, error: announcementsError } = await announcementService.getAnnouncements()
-      
+      const { data: announcementsData, error: announcementsError } =
+        await announcementService.getAnnouncements();
+
       if (!announcementsError && announcementsData) {
-        const transformedAnnouncements: Announcement[] = announcementsData.slice(0, 3).map((announcement, index) => ({
-          title: announcement.title,
-          date: index === 0 ? "Today" : index === 1 ? "Yesterday" : "2 days ago",
-          priority: announcement.priority,
-        }))
-        setAnnouncements(transformedAnnouncements)
+        const transformedAnnouncements: Announcement[] = announcementsData
+          .slice(0, 3)
+          .map((announcement, index) => ({
+            title: announcement.title,
+            date:
+              index === 0 ? "Today" : index === 1 ? "Yesterday" : "2 days ago",
+            priority: announcement.priority,
+          }));
+        setAnnouncements(transformedAnnouncements);
       }
 
       // Generate mock recent messages (since we don't have a messaging system yet)
@@ -300,23 +331,22 @@ export default function LecturerDashboard() {
           time: "1 day ago",
           unread: false,
         },
-      ]
-      setRecentMessages(mockMessages)
-      
+      ];
+      setRecentMessages(mockMessages);
     } catch (err) {
-      setError("Failed to fetch lecturer data")
-      console.error("Error fetching lecturer data:", err)
+      setError("Failed to fetch lecturer data");
+      console.error("Error fetching lecturer data:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
+  });
 
   if (loading) {
     return (
@@ -326,7 +356,7 @@ export default function LecturerDashboard() {
           <span>Loading your dashboard...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -337,7 +367,7 @@ export default function LecturerDashboard() {
           <Button onClick={fetchLecturerData}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -361,9 +391,15 @@ export default function LecturerDashboard() {
                 <Bell className="h-4 w-4" />
               </Button>
               <Avatar className="h-8 w-8">
-                <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} alt={profile?.full_name} />
+                <AvatarImage
+                  src={profile?.avatar_url || "/placeholder.svg"}
+                  alt={profile?.full_name}
+                />
                 <AvatarFallback className="bg-blue-100 text-blue-600">
-                  {profile?.full_name?.split(" ").map(n => n[0]).join("") || "L"}
+                  {profile?.full_name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("") || "L"}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -374,7 +410,9 @@ export default function LecturerDashboard() {
             <Card className="overflow-hidden bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 text-white shadow-xl border-0">
               <CardContent className="p-8">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-bold">Welcome back, {profile?.full_name}! 👨‍🏫</h1>
+                  <h1 className="text-3xl font-bold">
+                    Welcome back, {profile?.full_name}! 👨‍🏫
+                  </h1>
                   <p className="text-blue-100 text-lg">Lecturer Dashboard</p>
                   <p className="text-blue-200">{currentDate}</p>
                 </div>
@@ -390,8 +428,12 @@ export default function LecturerDashboard() {
                       <BookOpen className="h-6 w-6" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-800">{overview.assignedCourses}</div>
-                      <div className="text-sm text-gray-600">Assigned Courses</div>
+                      <div className="text-2xl font-bold text-gray-800">
+                        {overview.assignedCourses}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Assigned Courses
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -404,8 +446,12 @@ export default function LecturerDashboard() {
                       <Users className="h-6 w-6" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-800">{overview.studentsTaught}</div>
-                      <div className="text-sm text-gray-600">Students Taught</div>
+                      <div className="text-2xl font-bold text-gray-800">
+                        {overview.studentsTaught}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Students Taught
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -418,7 +464,9 @@ export default function LecturerDashboard() {
                       <Clock className="h-6 w-6" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-800">{overview.classesToday}</div>
+                      <div className="text-2xl font-bold text-gray-800">
+                        {overview.classesToday}
+                      </div>
                       <div className="text-sm text-gray-600">Classes Today</div>
                     </div>
                   </div>
@@ -432,8 +480,12 @@ export default function LecturerDashboard() {
                       <FileText className="h-6 w-6" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-800">{overview.pendingGrading}</div>
-                      <div className="text-sm text-gray-600">Pending Grading</div>
+                      <div className="text-2xl font-bold text-gray-800">
+                        {overview.pendingGrading}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Pending Grading
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -448,7 +500,9 @@ export default function LecturerDashboard() {
                     <BookOpen className="h-5 w-5 text-blue-600" />
                     My Courses
                   </CardTitle>
-                  <CardDescription>Your assigned courses and class schedules</CardDescription>
+                  <CardDescription>
+                    Your assigned courses and class schedules
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {courses.length === 0 ? (
@@ -472,10 +526,14 @@ export default function LecturerDashboard() {
                           <TableRow key={course.id}>
                             <TableCell>
                               <div>
-                                <div className="font-medium text-gray-900">{course.title}</div>
+                                <div className="font-medium text-gray-900">
+                                  {course.title}
+                                </div>
                               </div>
                             </TableCell>
-                            <TableCell className="font-medium">{course.code}</TableCell>
+                            <TableCell className="font-medium">
+                              {course.code}
+                            </TableCell>
                             <TableCell>{course.classSize}</TableCell>
                             <TableCell>{course.schedule}</TableCell>
                             <TableCell className="text-right">
@@ -504,22 +562,44 @@ export default function LecturerDashboard() {
                   {upcomingClasses.length === 0 ? (
                     <div className="text-center py-4">
                       <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-500 text-sm">No upcoming classes</p>
+                      <p className="text-gray-500 text-sm">
+                        No upcoming classes
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {upcomingClasses.map((class_, index) => (
-                        <div key={index} className="p-3 rounded-lg border border-gray-200">
+                        <div
+                          key={index}
+                          className="p-3 rounded-lg border border-gray-200"
+                        >
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-gray-900 text-sm">{class_.course}</h4>
-                              <Badge variant={class_.method === "Online" ? "default" : "secondary"} className="text-xs">
+                              <h4 className="font-medium text-gray-900 text-sm">
+                                {class_.course}
+                              </h4>
+                              <Badge
+                                variant={
+                                  class_.method === "Online"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                                className="text-xs"
+                              >
                                 {class_.method}
                               </Badge>
                             </div>
-                            <p className="text-sm text-gray-600">{class_.time} • {class_.duration}</p>
-                            <p className="text-xs text-gray-500">{class_.room}</p>
-                            <Button size="sm" variant="outline" className="w-full">
+                            <p className="text-sm text-gray-600">
+                              {class_.time} • {class_.duration}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {class_.room}
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full"
+                            >
                               Join Class
                             </Button>
                           </div>
@@ -539,24 +619,40 @@ export default function LecturerDashboard() {
                     <MessageSquare className="h-5 w-5 text-blue-600" />
                     Recent Messages
                   </CardTitle>
-                  <CardDescription>Latest student communications</CardDescription>
+                  <CardDescription>
+                    Latest student communications
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {recentMessages.map((message, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                      >
                         <Avatar className="h-8 w-8">
                           <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
-                            {message.from.split(" ").map(n => n[0]).join("")}
+                            {message.from
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-gray-900 truncate">{message.from}</p>
-                            {message.unread && <div className="w-2 h-2 bg-blue-500 rounded-full"></div>}
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {message.from}
+                            </p>
+                            {message.unread && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
                           </div>
-                          <p className="text-xs text-gray-600 truncate">{message.subject}</p>
-                          <p className="text-xs text-gray-500">{message.time}</p>
+                          <p className="text-xs text-gray-600 truncate">
+                            {message.subject}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {message.time}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -571,29 +667,46 @@ export default function LecturerDashboard() {
                     <Megaphone className="h-5 w-5 text-blue-600" />
                     Recent Announcements
                   </CardTitle>
-                  <CardDescription>Latest announcements and updates</CardDescription>
+                  <CardDescription>
+                    Latest announcements and updates
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {announcements.length === 0 ? (
                       <div className="text-center py-4">
                         <Megaphone className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-500 text-sm">No recent announcements</p>
+                        <p className="text-gray-500 text-sm">
+                          No recent announcements
+                        </p>
                       </div>
                     ) : (
                       announcements.map((announcement, index) => (
-                        <div key={index} className="p-3 rounded-lg border border-gray-200">
+                        <div
+                          key={index}
+                          className="p-3 rounded-lg border border-gray-200"
+                        >
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-gray-900 text-sm">{announcement.title}</h4>
-                              <Badge 
-                                variant={announcement.priority === "high" ? "destructive" : announcement.priority === "medium" ? "default" : "secondary"}
+                              <h4 className="font-medium text-gray-900 text-sm">
+                                {announcement.title}
+                              </h4>
+                              <Badge
+                                variant={
+                                  announcement.priority === "high"
+                                    ? "destructive"
+                                    : announcement.priority === "medium"
+                                      ? "default"
+                                      : "secondary"
+                                }
                                 className="text-xs"
                               >
                                 {announcement.priority}
                               </Badge>
                             </div>
-                            <p className="text-xs text-gray-500">{announcement.date}</p>
+                            <p className="text-xs text-gray-500">
+                              {announcement.date}
+                            </p>
                           </div>
                         </div>
                       ))
@@ -606,5 +719,5 @@ export default function LecturerDashboard() {
         </SidebarInset>
       </div>
     </SidebarProvider>
-  )
+  );
 }

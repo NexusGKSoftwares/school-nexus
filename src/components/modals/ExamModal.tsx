@@ -1,21 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Clock, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Clock, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Exam {
   id?: string;
   title: string;
   course_id: string;
-  exam_type: 'midterm' | 'final' | 'quiz' | 'assignment' | 'project' | 'other';
+  exam_type: "midterm" | "final" | "quiz" | "assignment" | "project" | "other";
   exam_date: Date;
   start_time: string;
   end_time: string;
@@ -24,7 +39,7 @@ interface Exam {
   passing_marks: number;
   location?: string;
   instructions?: string;
-  status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
+  status: "scheduled" | "ongoing" | "completed" | "cancelled";
   created_at?: string;
   updated_at?: string;
 }
@@ -44,21 +59,21 @@ export function ExamModal({
   onSave,
   exam,
   courses,
-  isLoading = false
+  isLoading = false,
 }: ExamModalProps) {
   const [formData, setFormData] = useState<Exam>({
-    title: '',
-    course_id: '',
-    exam_type: 'midterm',
+    title: "",
+    course_id: "",
+    exam_type: "midterm",
     exam_date: new Date(),
-    start_time: '09:00',
-    end_time: '11:00',
+    start_time: "09:00",
+    end_time: "11:00",
     duration_minutes: 120,
     total_marks: 100,
     passing_marks: 50,
-    location: '',
-    instructions: '',
-    status: 'scheduled'
+    location: "",
+    instructions: "",
+    status: "scheduled",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,22 +82,22 @@ export function ExamModal({
     if (exam) {
       setFormData({
         ...exam,
-        exam_date: exam.exam_date ? new Date(exam.exam_date) : new Date()
+        exam_date: exam.exam_date ? new Date(exam.exam_date) : new Date(),
       });
     } else {
       setFormData({
-        title: '',
-        course_id: '',
-        exam_type: 'midterm',
+        title: "",
+        course_id: "",
+        exam_type: "midterm",
         exam_date: new Date(),
-        start_time: '09:00',
-        end_time: '11:00',
+        start_time: "09:00",
+        end_time: "11:00",
         duration_minutes: 120,
         total_marks: 100,
         passing_marks: 50,
-        location: '',
-        instructions: '',
-        status: 'scheduled'
+        location: "",
+        instructions: "",
+        status: "scheduled",
       });
     }
     setErrors({});
@@ -92,22 +107,22 @@ export function ExamModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Exam title is required';
+      newErrors.title = "Exam title is required";
     }
     if (!formData.course_id) {
-      newErrors.course_id = 'Course is required';
+      newErrors.course_id = "Course is required";
     }
     if (formData.total_marks <= 0) {
-      newErrors.total_marks = 'Total marks must be greater than 0';
+      newErrors.total_marks = "Total marks must be greater than 0";
     }
     if (formData.passing_marks <= 0) {
-      newErrors.passing_marks = 'Passing marks must be greater than 0';
+      newErrors.passing_marks = "Passing marks must be greater than 0";
     }
     if (formData.passing_marks > formData.total_marks) {
-      newErrors.passing_marks = 'Passing marks cannot exceed total marks';
+      newErrors.passing_marks = "Passing marks cannot exceed total marks";
     }
     if (formData.duration_minutes <= 0) {
-      newErrors.duration_minutes = 'Duration must be greater than 0';
+      newErrors.duration_minutes = "Duration must be greater than 0";
     }
 
     setErrors(newErrors);
@@ -122,9 +137,9 @@ export function ExamModal({
   };
 
   const handleInputChange = (field: keyof Exam, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -132,11 +147,9 @@ export function ExamModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {exam ? 'Edit Exam' : 'Add New Exam'}
-          </DialogTitle>
+          <DialogTitle>{exam ? "Edit Exam" : "Add New Exam"}</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="title">Exam Title</Label>
@@ -144,9 +157,9 @@ export function ExamModal({
               id="title"
               type="text"
               value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
+              onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder="Enter exam title"
-              className={cn(errors.title && 'border-red-500')}
+              className={cn(errors.title && "border-red-500")}
             />
             {errors.title && (
               <p className="text-sm text-red-500">{errors.title}</p>
@@ -158,9 +171,11 @@ export function ExamModal({
               <Label htmlFor="course_id">Course</Label>
               <Select
                 value={formData.course_id}
-                onValueChange={(value) => handleInputChange('course_id', value)}
+                onValueChange={(value) => handleInputChange("course_id", value)}
               >
-                <SelectTrigger className={cn(errors.course_id && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.course_id && "border-red-500")}
+                >
                   <SelectValue placeholder="Select course" />
                 </SelectTrigger>
                 <SelectContent>
@@ -180,7 +195,7 @@ export function ExamModal({
               <Label htmlFor="exam_type">Exam Type</Label>
               <Select
                 value={formData.exam_type}
-                onValueChange={(value) => handleInputChange('exam_type', value)}
+                onValueChange={(value) => handleInputChange("exam_type", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -203,13 +218,13 @@ export function ExamModal({
                   <Button
                     variant="outline"
                     className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !formData.exam_date && 'text-muted-foreground'
+                      "w-full justify-start text-left font-normal",
+                      !formData.exam_date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.exam_date ? (
-                      format(formData.exam_date, 'PPP')
+                      format(formData.exam_date, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -219,7 +234,7 @@ export function ExamModal({
                   <Calendar
                     mode="single"
                     selected={formData.exam_date}
-                    onSelect={(date) => handleInputChange('exam_date', date)}
+                    onSelect={(date) => handleInputChange("exam_date", date)}
                     initialFocus
                   />
                 </PopoverContent>
@@ -230,7 +245,7 @@ export function ExamModal({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
+                onValueChange={(value) => handleInputChange("status", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -250,7 +265,9 @@ export function ExamModal({
                 id="start_time"
                 type="time"
                 value={formData.start_time}
-                onChange={(e) => handleInputChange('start_time', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("start_time", e.target.value)
+                }
               />
             </div>
 
@@ -260,7 +277,7 @@ export function ExamModal({
                 id="end_time"
                 type="time"
                 value={formData.end_time}
-                onChange={(e) => handleInputChange('end_time', e.target.value)}
+                onChange={(e) => handleInputChange("end_time", e.target.value)}
               />
             </div>
 
@@ -271,11 +288,18 @@ export function ExamModal({
                 type="number"
                 min="1"
                 value={formData.duration_minutes}
-                onChange={(e) => handleInputChange('duration_minutes', parseInt(e.target.value) || 0)}
-                className={cn(errors.duration_minutes && 'border-red-500')}
+                onChange={(e) =>
+                  handleInputChange(
+                    "duration_minutes",
+                    parseInt(e.target.value) || 0,
+                  )
+                }
+                className={cn(errors.duration_minutes && "border-red-500")}
               />
               {errors.duration_minutes && (
-                <p className="text-sm text-red-500">{errors.duration_minutes}</p>
+                <p className="text-sm text-red-500">
+                  {errors.duration_minutes}
+                </p>
               )}
             </div>
 
@@ -286,8 +310,13 @@ export function ExamModal({
                 type="number"
                 min="1"
                 value={formData.total_marks}
-                onChange={(e) => handleInputChange('total_marks', parseInt(e.target.value) || 0)}
-                className={cn(errors.total_marks && 'border-red-500')}
+                onChange={(e) =>
+                  handleInputChange(
+                    "total_marks",
+                    parseInt(e.target.value) || 0,
+                  )
+                }
+                className={cn(errors.total_marks && "border-red-500")}
               />
               {errors.total_marks && (
                 <p className="text-sm text-red-500">{errors.total_marks}</p>
@@ -301,8 +330,13 @@ export function ExamModal({
                 type="number"
                 min="1"
                 value={formData.passing_marks}
-                onChange={(e) => handleInputChange('passing_marks', parseInt(e.target.value) || 0)}
-                className={cn(errors.passing_marks && 'border-red-500')}
+                onChange={(e) =>
+                  handleInputChange(
+                    "passing_marks",
+                    parseInt(e.target.value) || 0,
+                  )
+                }
+                className={cn(errors.passing_marks && "border-red-500")}
               />
               {errors.passing_marks && (
                 <p className="text-sm text-red-500">{errors.passing_marks}</p>
@@ -314,8 +348,8 @@ export function ExamModal({
               <Input
                 id="location"
                 type="text"
-                value={formData.location || ''}
-                onChange={(e) => handleInputChange('location', e.target.value)}
+                value={formData.location || ""}
+                onChange={(e) => handleInputChange("location", e.target.value)}
                 placeholder="e.g., Room 101, Building A"
               />
             </div>
@@ -325,8 +359,10 @@ export function ExamModal({
             <Label htmlFor="instructions">Instructions (Optional)</Label>
             <Textarea
               id="instructions"
-              value={formData.instructions || ''}
-              onChange={(e) => handleInputChange('instructions', e.target.value)}
+              value={formData.instructions || ""}
+              onChange={(e) =>
+                handleInputChange("instructions", e.target.value)
+              }
               placeholder="Enter exam instructions for students..."
               rows={4}
             />
@@ -338,11 +374,11 @@ export function ExamModal({
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {exam ? 'Update' : 'Create'} Exam
+              {exam ? "Update" : "Create"} Exam
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-} 
+}

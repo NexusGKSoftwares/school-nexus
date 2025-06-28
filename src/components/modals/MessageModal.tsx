@@ -1,15 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Loader2, Send } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Loader2, Send } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id?: string;
@@ -17,9 +32,9 @@ interface Message {
   recipient_id: string;
   subject: string;
   content: string;
-  message_type: 'personal' | 'announcement' | 'notification' | 'support';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'draft' | 'sent' | 'delivered' | 'read' | 'archived';
+  message_type: "personal" | "announcement" | "notification" | "support";
+  priority: "low" | "medium" | "high" | "urgent";
+  status: "draft" | "sent" | "delivered" | "read" | "archived";
   sent_date?: Date;
   read_date?: Date;
   is_important: boolean;
@@ -44,19 +59,19 @@ export function MessageModal({
   message,
   users,
   currentUserId,
-  isLoading = false
+  isLoading = false,
 }: MessageModalProps) {
   const [formData, setFormData] = useState<Message>({
     sender_id: currentUserId,
-    recipient_id: '',
-    subject: '',
-    content: '',
-    message_type: 'personal',
-    priority: 'medium',
-    status: 'draft',
+    recipient_id: "",
+    subject: "",
+    content: "",
+    message_type: "personal",
+    priority: "medium",
+    status: "draft",
     sent_date: undefined,
     read_date: undefined,
-    is_important: false
+    is_important: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,20 +81,20 @@ export function MessageModal({
       setFormData({
         ...message,
         sent_date: message.sent_date ? new Date(message.sent_date) : undefined,
-        read_date: message.read_date ? new Date(message.read_date) : undefined
+        read_date: message.read_date ? new Date(message.read_date) : undefined,
       });
     } else {
       setFormData({
         sender_id: currentUserId,
-        recipient_id: '',
-        subject: '',
-        content: '',
-        message_type: 'personal',
-        priority: 'medium',
-        status: 'draft',
+        recipient_id: "",
+        subject: "",
+        content: "",
+        message_type: "personal",
+        priority: "medium",
+        status: "draft",
         sent_date: undefined,
         read_date: undefined,
-        is_important: false
+        is_important: false,
       });
     }
     setErrors({});
@@ -89,13 +104,13 @@ export function MessageModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.recipient_id) {
-      newErrors.recipient_id = 'Recipient is required';
+      newErrors.recipient_id = "Recipient is required";
     }
     if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required';
+      newErrors.subject = "Subject is required";
     }
     if (!formData.content.trim()) {
-      newErrors.content = 'Message content is required';
+      newErrors.content = "Message content is required";
     }
 
     setErrors(newErrors);
@@ -106,7 +121,7 @@ export function MessageModal({
     e.preventDefault();
     if (validateForm()) {
       // If sending the message, set sent_date to current time
-      if (formData.status === 'sent' && !formData.sent_date) {
+      if (formData.status === "sent" && !formData.sent_date) {
         formData.sent_date = new Date();
       }
       onSave(formData);
@@ -114,26 +129,35 @@ export function MessageModal({
   };
 
   const handleInputChange = (field: keyof Message, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const handleSend = () => {
     if (validateForm()) {
-      setFormData(prev => ({ ...prev, status: 'sent', sent_date: new Date() }));
-      onSave({ ...formData, status: 'sent', sent_date: new Date() });
+      setFormData((prev) => ({
+        ...prev,
+        status: "sent",
+        sent_date: new Date(),
+      }));
+      onSave({ ...formData, status: "sent", sent_date: new Date() });
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600';
-      case 'high': return 'text-orange-600';
-      case 'medium': return 'text-yellow-600';
-      case 'low': return 'text-green-600';
-      default: return 'text-gray-600';
+      case "urgent":
+        return "text-red-600";
+      case "high":
+        return "text-orange-600";
+      case "medium":
+        return "text-yellow-600";
+      case "low":
+        return "text-green-600";
+      default:
+        return "text-gray-600";
     }
   };
 
@@ -142,24 +166,28 @@ export function MessageModal({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {message ? 'Edit Message' : 'Compose New Message'}
+            {message ? "Edit Message" : "Compose New Message"}
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="recipient_id">To</Label>
               <Select
                 value={formData.recipient_id}
-                onValueChange={(value) => handleInputChange('recipient_id', value)}
+                onValueChange={(value) =>
+                  handleInputChange("recipient_id", value)
+                }
               >
-                <SelectTrigger className={cn(errors.recipient_id && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.recipient_id && "border-red-500")}
+                >
                   <SelectValue placeholder="Select recipient" />
                 </SelectTrigger>
                 <SelectContent>
                   {users
-                    .filter(user => user.id !== currentUserId)
+                    .filter((user) => user.id !== currentUserId)
                     .map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name} ({user.email}) - {user.role}
@@ -176,7 +204,9 @@ export function MessageModal({
               <Label htmlFor="message_type">Message Type</Label>
               <Select
                 value={formData.message_type}
-                onValueChange={(value) => handleInputChange('message_type', value)}
+                onValueChange={(value) =>
+                  handleInputChange("message_type", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -194,16 +224,24 @@ export function MessageModal({
               <Label htmlFor="priority">Priority</Label>
               <Select
                 value={formData.priority}
-                onValueChange={(value) => handleInputChange('priority', value)}
+                onValueChange={(value) => handleInputChange("priority", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low" className="text-green-600">Low</SelectItem>
-                  <SelectItem value="medium" className="text-yellow-600">Medium</SelectItem>
-                  <SelectItem value="high" className="text-orange-600">High</SelectItem>
-                  <SelectItem value="urgent" className="text-red-600">Urgent</SelectItem>
+                  <SelectItem value="low" className="text-green-600">
+                    Low
+                  </SelectItem>
+                  <SelectItem value="medium" className="text-yellow-600">
+                    Medium
+                  </SelectItem>
+                  <SelectItem value="high" className="text-orange-600">
+                    High
+                  </SelectItem>
+                  <SelectItem value="urgent" className="text-red-600">
+                    Urgent
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -212,7 +250,7 @@ export function MessageModal({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
+                onValueChange={(value) => handleInputChange("status", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -234,9 +272,9 @@ export function MessageModal({
               id="subject"
               type="text"
               value={formData.subject}
-              onChange={(e) => handleInputChange('subject', e.target.value)}
+              onChange={(e) => handleInputChange("subject", e.target.value)}
               placeholder="Enter message subject"
-              className={cn(errors.subject && 'border-red-500')}
+              className={cn(errors.subject && "border-red-500")}
             />
             {errors.subject && (
               <p className="text-sm text-red-500">{errors.subject}</p>
@@ -248,10 +286,10 @@ export function MessageModal({
             <Textarea
               id="content"
               value={formData.content}
-              onChange={(e) => handleInputChange('content', e.target.value)}
+              onChange={(e) => handleInputChange("content", e.target.value)}
               placeholder="Type your message here..."
               rows={8}
-              className={cn(errors.content && 'border-red-500')}
+              className={cn(errors.content && "border-red-500")}
             />
             {errors.content && (
               <p className="text-sm text-red-500">{errors.content}</p>
@@ -263,7 +301,9 @@ export function MessageModal({
               type="checkbox"
               id="is_important"
               checked={formData.is_important}
-              onChange={(e) => handleInputChange('is_important', e.target.checked)}
+              onChange={(e) =>
+                handleInputChange("is_important", e.target.checked)
+              }
               className="rounded"
             />
             <Label htmlFor="is_important">Mark as Important</Label>
@@ -277,17 +317,26 @@ export function MessageModal({
                 <div>
                   <span className="font-medium">To:</span>
                   <span className="text-gray-600 ml-2">
-                    {users.find(u => u.id === formData.recipient_id)?.name || 'Not selected'}
+                    {users.find((u) => u.id === formData.recipient_id)?.name ||
+                      "Not selected"}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Subject:</span>
-                  <span className="text-gray-600 ml-2">{formData.subject || 'No subject'}</span>
+                  <span className="text-gray-600 ml-2">
+                    {formData.subject || "No subject"}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Priority:</span>
-                  <span className={cn('ml-2 font-medium', getPriorityColor(formData.priority))}>
-                    {formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1)}
+                  <span
+                    className={cn(
+                      "ml-2 font-medium",
+                      getPriorityColor(formData.priority),
+                    )}
+                  >
+                    {formData.priority.charAt(0).toUpperCase() +
+                      formData.priority.slice(1)}
                   </span>
                 </div>
                 {formData.content && (
@@ -309,8 +358,8 @@ export function MessageModal({
             <Button type="button" variant="outline" onClick={handleSubmit}>
               Save Draft
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={handleSend}
               disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700"
@@ -324,4 +373,4 @@ export function MessageModal({
       </DialogContent>
     </Dialog>
   );
-} 
+}

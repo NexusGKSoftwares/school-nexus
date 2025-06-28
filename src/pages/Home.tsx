@@ -1,7 +1,13 @@
-import { Link } from "react-router-dom"
-import { GraduationCap, BookOpen, Users, Shield } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Link } from "react-router-dom";
+import { GraduationCap, BookOpen, Users, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function Home() {
   return (
@@ -14,11 +20,14 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-4xl font-bold text-gray-900">EduPlatform</h1>
-              <p className="text-blue-600 font-medium">Smart University System</p>
+              <p className="text-blue-600 font-medium">
+                Smart University System
+              </p>
             </div>
           </div>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Welcome to the comprehensive university management system. Choose your portal to get started.
+            Welcome to the comprehensive university management system. Choose
+            your portal to get started.
           </p>
         </div>
 
@@ -30,7 +39,9 @@ export default function Home() {
                   <BookOpen className="h-8 w-8" />
                 </div>
               </div>
-              <CardTitle className="text-2xl text-gray-800">Student Portal</CardTitle>
+              <CardTitle className="text-2xl text-gray-800">
+                Student Portal
+              </CardTitle>
               <CardDescription className="text-gray-600">
                 Access your courses, assignments, grades, and academic resources
               </CardDescription>
@@ -65,7 +76,9 @@ export default function Home() {
                   <Users className="h-8 w-8" />
                 </div>
               </div>
-              <CardTitle className="text-2xl text-gray-800">Lecturer Portal</CardTitle>
+              <CardTitle className="text-2xl text-gray-800">
+                Lecturer Portal
+              </CardTitle>
               <CardDescription className="text-gray-600">
                 Manage courses, students, assignments, and academic performance
               </CardDescription>
@@ -100,7 +113,9 @@ export default function Home() {
                   <Shield className="h-8 w-8" />
                 </div>
               </div>
-              <CardTitle className="text-2xl text-gray-800">Admin Portal</CardTitle>
+              <CardTitle className="text-2xl text-gray-800">
+                Admin Portal
+              </CardTitle>
               <CardDescription className="text-gray-600">
                 Complete system administration, user management, and analytics
               </CardDescription>
@@ -131,10 +146,11 @@ export default function Home() {
 
         <div className="text-center mt-12">
           <p className="text-gray-500 text-sm">
-            © 2024 EduPlatform. All rights reserved. | Smart University Management System
+            © 2024 EduPlatform. All rights reserved. | Smart University
+            Management System
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

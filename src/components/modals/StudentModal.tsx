@@ -1,25 +1,42 @@
-"use client"
+"use client";
 
-import type React from "react"
-import type { Student } from "@/pages/admin/Students"
+import type React from "react";
+import type { Student } from "@/pages/admin/Students";
 
-import { useState, useEffect } from "react"
-import { User, Mail, Phone, Calendar, GraduationCap } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState, useEffect } from "react";
+import { User, Mail, Phone, Calendar, GraduationCap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface StudentModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (student: Student) => Promise<void>
-  student?: Student | null
-  mode: "create" | "edit"
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (student: Student) => Promise<void>;
+  student?: Student | null;
+  mode: "create" | "edit";
 }
 
-export default function StudentModal({ isOpen, onClose, onSave, student, mode }: StudentModalProps) {
+export default function StudentModal({
+  isOpen,
+  onClose,
+  onSave,
+  student,
+  mode,
+}: StudentModalProps) {
   const [formData, setFormData] = useState<Student>({
     id: "",
     name: "",
@@ -30,13 +47,13 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
     gpa: 0,
     status: "Active",
     enrollmentDate: new Date().toISOString().split("T")[0],
-  })
+  });
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (student && mode === "edit") {
-      setFormData(student)
+      setFormData(student);
     } else {
       setFormData({
         id: "",
@@ -48,40 +65,41 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
         gpa: 0,
         status: "Active",
         enrollmentDate: new Date().toISOString().split("T")[0],
-      })
+      });
     }
-    setErrors({})
-  }, [student, mode, isOpen])
+    setErrors({});
+  }, [student, mode, isOpen]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) newErrors.name = "Name is required"
-    if (!formData.email.trim()) newErrors.email = "Email is required"
-    if (!formData.email.includes("@")) newErrors.email = "Invalid email format"
-    if (!formData.phone.trim()) newErrors.phone = "Phone is required"
-    if (!formData.department) newErrors.department = "Department is required"
-    if (!formData.year) newErrors.year = "Year is required"
-    if (formData.gpa < 0 || formData.gpa > 4) newErrors.gpa = "GPA must be between 0 and 4"
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    if (!formData.email.includes("@")) newErrors.email = "Invalid email format";
+    if (!formData.phone.trim()) newErrors.phone = "Phone is required";
+    if (!formData.department) newErrors.department = "Department is required";
+    if (!formData.year) newErrors.year = "Year is required";
+    if (formData.gpa < 0 || formData.gpa > 4)
+      newErrors.gpa = "GPA must be between 0 and 4";
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (validateForm()) {
-      onSave(formData)
-      onClose()
+      onSave(formData);
+      onClose();
     }
-  }
+  };
 
   const handleChange = (field: keyof Student, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -108,7 +126,9 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
                 placeholder="Enter full name"
                 className={errors.name ? "border-red-500" : ""}
               />
-              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name}</p>
+              )}
             </div>
 
             {/* Email */}
@@ -125,7 +145,9 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
                 placeholder="Enter email address"
                 className={errors.email ? "border-red-500" : ""}
               />
-              {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email}</p>
+              )}
             </div>
 
             {/* Phone */}
@@ -141,7 +163,9 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
                 placeholder="Enter phone number"
                 className={errors.phone ? "border-red-500" : ""}
               />
-              {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
+              {errors.phone && (
+                <p className="text-sm text-red-500">{errors.phone}</p>
+              )}
             </div>
 
             {/* Department */}
@@ -150,12 +174,19 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
                 <GraduationCap className="h-4 w-4" />
                 Department *
               </Label>
-              <Select value={formData.department} onValueChange={(value) => handleChange("department", value)}>
-                <SelectTrigger className={errors.department ? "border-red-500" : ""}>
+              <Select
+                value={formData.department}
+                onValueChange={(value) => handleChange("department", value)}
+              >
+                <SelectTrigger
+                  className={errors.department ? "border-red-500" : ""}
+                >
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Computer Science">Computer Science</SelectItem>
+                  <SelectItem value="Computer Science">
+                    Computer Science
+                  </SelectItem>
                   <SelectItem value="Engineering">Engineering</SelectItem>
                   <SelectItem value="Mathematics">Mathematics</SelectItem>
                   <SelectItem value="Physics">Physics</SelectItem>
@@ -163,7 +194,9 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
                   <SelectItem value="English">English</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.department && <p className="text-sm text-red-500">{errors.department}</p>}
+              {errors.department && (
+                <p className="text-sm text-red-500">{errors.department}</p>
+              )}
             </div>
 
             {/* Year */}
@@ -172,7 +205,10 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
                 <Calendar className="h-4 w-4" />
                 Academic Year *
               </Label>
-              <Select value={formData.year} onValueChange={(value) => handleChange("year", value)}>
+              <Select
+                value={formData.year}
+                onValueChange={(value) => handleChange("year", value)}
+              >
                 <SelectTrigger className={errors.year ? "border-red-500" : ""}>
                   <SelectValue placeholder="Select year" />
                 </SelectTrigger>
@@ -184,7 +220,9 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
                   <SelectItem value="Graduate">Graduate</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.year && <p className="text-sm text-red-500">{errors.year}</p>}
+              {errors.year && (
+                <p className="text-sm text-red-500">{errors.year}</p>
+              )}
             </div>
 
             {/* GPA */}
@@ -197,17 +235,24 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
                 min="0"
                 max="4"
                 value={formData.gpa}
-                onChange={(e) => handleChange("gpa", Number.parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange("gpa", Number.parseFloat(e.target.value) || 0)
+                }
                 placeholder="Enter GPA (0.0 - 4.0)"
                 className={errors.gpa ? "border-red-500" : ""}
               />
-              {errors.gpa && <p className="text-sm text-red-500">{errors.gpa}</p>}
+              {errors.gpa && (
+                <p className="text-sm text-red-500">{errors.gpa}</p>
+              )}
             </div>
 
             {/* Status */}
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleChange("status", value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -243,5 +288,5 @@ export default function StudentModal({ isOpen, onClose, onSave, student, mode }:
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

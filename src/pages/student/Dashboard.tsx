@@ -1,82 +1,112 @@
-import { useState, useEffect } from "react"
-import { BookOpen, TrendingUp, FileText, AlertTriangle, Play, Eye, UserPlus, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { useAuth } from "../../contexts/AuthContext"
-import { studentService, enrollmentService } from "../../lib/dataService"
+import { useState, useEffect } from "react";
+import {
+  BookOpen,
+  TrendingUp,
+  FileText,
+  AlertTriangle,
+  Play,
+  Eye,
+  UserPlus,
+  Loader2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { useAuth } from "../../contexts/AuthContext";
+import { studentService, enrollmentService } from "../../lib/dataService";
 
 interface Course {
-  subject: string
-  code: string
-  progress: number
-  status: string
+  subject: string;
+  code: string;
+  progress: number;
+  status: string;
 }
 
 interface Result {
-  subject: string
-  score: number
-  maxScore: number
+  subject: string;
+  score: number;
+  maxScore: number;
 }
 
 export default function StudentDashboard() {
-  const { profile } = useAuth()
-  const [coursesData, setCoursesData] = useState<Course[]>([])
-  const [recentResults, setRecentResults] = useState<Result[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { profile } = useAuth();
+  const [coursesData, setCoursesData] = useState<Course[]>([]);
+  const [recentResults, setRecentResults] = useState<Result[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchStudentData()
-  }, [profile])
+    fetchStudentData();
+  }, [profile]);
 
   const fetchStudentData = async () => {
-    if (!profile) return
+    if (!profile) return;
 
     try {
-      setLoading(true)
-      
+      setLoading(true);
+
       // Get student record
-      const { data: studentData, error: studentError } = await studentService.getStudentByProfile(profile.id)
-      
+      const { data: studentData, error: studentError } =
+        await studentService.getStudentByProfile(profile.id);
+
       if (studentError) {
-        setError(studentError.message)
-        return
+        setError(studentError.message);
+        return;
       }
 
       if (studentData) {
         // Get student enrollments
-        const { data: enrollments, error: enrollmentError } = await enrollmentService.getEnrollmentsByStudent(studentData.id)
-        
+        const { data: enrollments, error: enrollmentError } =
+          await enrollmentService.getEnrollmentsByStudent(studentData.id);
+
         if (enrollmentError) {
-          console.error("Error fetching enrollments:", enrollmentError)
+          console.error("Error fetching enrollments:", enrollmentError);
         }
 
         if (enrollments) {
-          const transformedCourses: Course[] = enrollments.map((enrollment: { course: { title: string; code: string }; status: string }) => ({
-            subject: enrollment.course.title,
-            code: enrollment.course.code,
-            progress: enrollment.status === 'completed' ? 100 : enrollment.status === 'enrolled' ? 75 : 0,
-            status: enrollment.status === 'enrolled' ? 'enrolled' : 'available',
-          }))
-          setCoursesData(transformedCourses)
+          const transformedCourses: Course[] = enrollments.map(
+            (enrollment: {
+              course: { title: string; code: string };
+              status: string;
+            }) => ({
+              subject: enrollment.course.title,
+              code: enrollment.course.code,
+              progress:
+                enrollment.status === "completed"
+                  ? 100
+                  : enrollment.status === "enrolled"
+                    ? 75
+                    : 0,
+              status:
+                enrollment.status === "enrolled" ? "enrolled" : "available",
+            }),
+          );
+          setCoursesData(transformedCourses);
 
           // Generate mock results based on enrollments
-          const mockResults: Result[] = enrollments.slice(0, 4).map((enrollment: { course: { title: string } }) => ({
-            subject: `${enrollment.course.title} Quiz`,
-            score: Math.floor(Math.random() * 30) + 70, // Random score between 70-100
-            maxScore: 100,
-          }))
-          setRecentResults(mockResults)
+          const mockResults: Result[] = enrollments
+            .slice(0, 4)
+            .map((enrollment: { course: { title: string } }) => ({
+              subject: `${enrollment.course.title} Quiz`,
+              score: Math.floor(Math.random() * 30) + 70, // Random score between 70-100
+              maxScore: 100,
+            }));
+          setRecentResults(mockResults);
         }
       }
     } catch (err) {
-      setError("Failed to fetch student data")
-      console.error("Error fetching student data:", err)
+      setError("Failed to fetch student data");
+      console.error("Error fetching student data:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -86,7 +116,7 @@ export default function StudentDashboard() {
           <span>Loading your dashboard...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -97,7 +127,7 @@ export default function StudentDashboard() {
           <Button onClick={fetchStudentData}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -107,8 +137,12 @@ export default function StudentDashboard() {
         <CardContent className="p-0">
           <div className="flex items-center justify-between p-8">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold">Hello {profile?.full_name}! 👋</h1>
-              <p className="text-blue-100 text-lg">Ready to continue your learning journey?</p>
+              <h1 className="text-3xl font-bold">
+                Hello {profile?.full_name}! 👋
+              </h1>
+              <p className="text-blue-100 text-lg">
+                Ready to continue your learning journey?
+              </p>
               <Button className="mt-4 bg-white text-blue-600 hover:bg-blue-50 font-semibold">
                 <Play className="h-4 w-4 mr-2" />
                 Continue Learning
@@ -133,7 +167,9 @@ export default function StudentDashboard() {
               <BookOpen className="h-5 w-5 text-blue-600" />
               Your Courses
             </CardTitle>
-            <CardDescription>Track your progress and continue learning</CardDescription>
+            <CardDescription>
+              Track your progress and continue learning
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {coursesData.length === 0 ? (
@@ -152,26 +188,40 @@ export default function StudentDashboard() {
                   className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100"
                 >
                   <div className="space-y-2">
-                    <div className="font-semibold text-gray-800">{course.subject}</div>
-                    <div className="text-sm text-blue-600 font-medium">{course.code}</div>
+                    <div className="font-semibold text-gray-800">
+                      {course.subject}
+                    </div>
+                    <div className="text-sm text-blue-600 font-medium">
+                      {course.code}
+                    </div>
                     {course.status === "enrolled" && (
                       <div className="space-y-1">
                         <div className="flex items-center justify-between text-xs text-gray-600">
                           <span>Progress</span>
                           <span>{course.progress}%</span>
                         </div>
-                        <Progress value={course.progress} className="h-2 bg-blue-100" />
+                        <Progress
+                          value={course.progress}
+                          className="h-2 bg-blue-100"
+                        />
                       </div>
                     )}
                   </div>
                   <div className="flex gap-2">
                     {course.status === "enrolled" ? (
-                      <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+                      <Button
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                      >
                         <Eye className="h-4 w-4 mr-1" />
                         View
                       </Button>
                     ) : (
-                      <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                      >
                         <UserPlus className="h-4 w-4 mr-1" />
                         Enroll
                       </Button>
@@ -190,7 +240,9 @@ export default function StudentDashboard() {
               <TrendingUp className="h-5 w-5 text-green-600" />
               Recent Results
             </CardTitle>
-            <CardDescription>Your latest quiz and assignment scores</CardDescription>
+            <CardDescription>
+              Your latest quiz and assignment scores
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {recentResults.length === 0 ? (
@@ -202,8 +254,12 @@ export default function StudentDashboard() {
               recentResults.map((result, index) => (
                 <div key={index} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-gray-700">{result.subject}</span>
-                    <span className="font-bold text-blue-600">{result.score}%</span>
+                    <span className="font-medium text-gray-700">
+                      {result.subject}
+                    </span>
+                    <span className="font-bold text-blue-600">
+                      {result.score}%
+                    </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
@@ -228,9 +284,14 @@ export default function StudentDashboard() {
               </div>
               <div className="space-y-1">
                 <h3 className="font-semibold text-gray-800">Leave Request</h3>
-                <p className="text-sm text-gray-600">Submit your leave application</p>
+                <p className="text-sm text-gray-600">
+                  Submit your leave application
+                </p>
               </div>
-              <Button variant="outline" className="ml-auto border-orange-300 text-orange-600 hover:bg-orange-50">
+              <Button
+                variant="outline"
+                className="ml-auto border-orange-300 text-orange-600 hover:bg-orange-50"
+              >
                 Apply
               </Button>
             </div>
@@ -244,10 +305,17 @@ export default function StudentDashboard() {
                 <AlertTriangle className="h-6 w-6" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-semibold text-gray-800">Complaint Submission</h3>
-                <p className="text-sm text-gray-600">Report issues or concerns</p>
+                <h3 className="font-semibold text-gray-800">
+                  Complaint Submission
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Report issues or concerns
+                </p>
               </div>
-              <Button variant="outline" className="ml-auto border-purple-300 text-purple-600 hover:bg-purple-50">
+              <Button
+                variant="outline"
+                className="ml-auto border-purple-300 text-purple-600 hover:bg-purple-50"
+              >
                 Submit
               </Button>
             </div>
@@ -255,5 +323,5 @@ export default function StudentDashboard() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

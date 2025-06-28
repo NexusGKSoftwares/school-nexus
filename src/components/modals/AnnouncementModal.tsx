@@ -1,24 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Announcement {
   id?: string;
   title: string;
   content: string;
   author_id: string;
-  target_audience: 'all' | 'students' | 'lecturers' | 'staff' | 'admin';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'draft' | 'published' | 'archived';
+  target_audience: "all" | "students" | "lecturers" | "staff" | "admin";
+  priority: "low" | "medium" | "high" | "urgent";
+  status: "draft" | "published" | "archived";
   publish_date?: Date;
   expiry_date?: Date;
   tags?: string;
@@ -41,18 +56,18 @@ export function AnnouncementModal({
   onSave,
   announcement,
   currentUserId,
-  isLoading = false
+  isLoading = false,
 }: AnnouncementModalProps) {
   const [formData, setFormData] = useState<Announcement>({
-    title: '',
-    content: '',
+    title: "",
+    content: "",
     author_id: currentUserId,
-    target_audience: 'all',
-    priority: 'medium',
-    status: 'draft',
+    target_audience: "all",
+    priority: "medium",
+    status: "draft",
     publish_date: undefined,
     expiry_date: undefined,
-    tags: ''
+    tags: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,20 +76,24 @@ export function AnnouncementModal({
     if (announcement) {
       setFormData({
         ...announcement,
-        publish_date: announcement.publish_date ? new Date(announcement.publish_date) : undefined,
-        expiry_date: announcement.expiry_date ? new Date(announcement.expiry_date) : undefined
+        publish_date: announcement.publish_date
+          ? new Date(announcement.publish_date)
+          : undefined,
+        expiry_date: announcement.expiry_date
+          ? new Date(announcement.expiry_date)
+          : undefined,
       });
     } else {
       setFormData({
-        title: '',
-        content: '',
+        title: "",
+        content: "",
         author_id: currentUserId,
-        target_audience: 'all',
-        priority: 'medium',
-        status: 'draft',
+        target_audience: "all",
+        priority: "medium",
+        status: "draft",
         publish_date: undefined,
         expiry_date: undefined,
-        tags: ''
+        tags: "",
       });
     }
     setErrors({});
@@ -84,13 +103,14 @@ export function AnnouncementModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     }
     if (!formData.content.trim()) {
-      newErrors.content = 'Content is required';
+      newErrors.content = "Content is required";
     }
-    if (formData.status === 'published' && !formData.publish_date) {
-      newErrors.publish_date = 'Publish date is required for published announcements';
+    if (formData.status === "published" && !formData.publish_date) {
+      newErrors.publish_date =
+        "Publish date is required for published announcements";
     }
 
     setErrors(newErrors);
@@ -105,9 +125,9 @@ export function AnnouncementModal({
   };
 
   const handleInputChange = (field: keyof Announcement, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -116,10 +136,10 @@ export function AnnouncementModal({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {announcement ? 'Edit Announcement' : 'Create New Announcement'}
+            {announcement ? "Edit Announcement" : "Create New Announcement"}
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
@@ -127,9 +147,9 @@ export function AnnouncementModal({
               id="title"
               type="text"
               value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
+              onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder="Enter announcement title"
-              className={cn(errors.title && 'border-red-500')}
+              className={cn(errors.title && "border-red-500")}
             />
             {errors.title && (
               <p className="text-sm text-red-500">{errors.title}</p>
@@ -141,7 +161,9 @@ export function AnnouncementModal({
               <Label htmlFor="target_audience">Target Audience</Label>
               <Select
                 value={formData.target_audience}
-                onValueChange={(value) => handleInputChange('target_audience', value)}
+                onValueChange={(value) =>
+                  handleInputChange("target_audience", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -160,7 +182,7 @@ export function AnnouncementModal({
               <Label htmlFor="priority">Priority</Label>
               <Select
                 value={formData.priority}
-                onValueChange={(value) => handleInputChange('priority', value)}
+                onValueChange={(value) => handleInputChange("priority", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -178,7 +200,7 @@ export function AnnouncementModal({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
+                onValueChange={(value) => handleInputChange("status", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -200,13 +222,13 @@ export function AnnouncementModal({
                   <Button
                     variant="outline"
                     className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !formData.publish_date && 'text-muted-foreground'
+                      "w-full justify-start text-left font-normal",
+                      !formData.publish_date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.publish_date ? (
-                      format(formData.publish_date, 'PPP')
+                      format(formData.publish_date, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -216,7 +238,7 @@ export function AnnouncementModal({
                   <Calendar
                     mode="single"
                     selected={formData.publish_date}
-                    onSelect={(date) => handleInputChange('publish_date', date)}
+                    onSelect={(date) => handleInputChange("publish_date", date)}
                     initialFocus
                   />
                 </PopoverContent>
@@ -233,13 +255,13 @@ export function AnnouncementModal({
                   <Button
                     variant="outline"
                     className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !formData.expiry_date && 'text-muted-foreground'
+                      "w-full justify-start text-left font-normal",
+                      !formData.expiry_date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.expiry_date ? (
-                      format(formData.expiry_date, 'PPP')
+                      format(formData.expiry_date, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -249,7 +271,7 @@ export function AnnouncementModal({
                   <Calendar
                     mode="single"
                     selected={formData.expiry_date}
-                    onSelect={(date) => handleInputChange('expiry_date', date)}
+                    onSelect={(date) => handleInputChange("expiry_date", date)}
                     initialFocus
                   />
                 </PopoverContent>
@@ -262,10 +284,10 @@ export function AnnouncementModal({
             <Textarea
               id="content"
               value={formData.content}
-              onChange={(e) => handleInputChange('content', e.target.value)}
+              onChange={(e) => handleInputChange("content", e.target.value)}
               placeholder="Enter announcement content..."
               rows={8}
-              className={cn(errors.content && 'border-red-500')}
+              className={cn(errors.content && "border-red-500")}
             />
             {errors.content && (
               <p className="text-sm text-red-500">{errors.content}</p>
@@ -277,8 +299,8 @@ export function AnnouncementModal({
             <Input
               id="tags"
               type="text"
-              value={formData.tags || ''}
-              onChange={(e) => handleInputChange('tags', e.target.value)}
+              value={formData.tags || ""}
+              onChange={(e) => handleInputChange("tags", e.target.value)}
               placeholder="Enter tags separated by commas (e.g., important, academic, event)"
             />
           </div>
@@ -289,11 +311,11 @@ export function AnnouncementModal({
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {announcement ? 'Update' : 'Create'} Announcement
+              {announcement ? "Update" : "Create"} Announcement
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-} 
+}

@@ -1,43 +1,60 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { BookOpen, User, Clock, Calendar, MapPin, Users } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
+import { useState, useEffect } from "react";
+import { BookOpen, User, Clock, Calendar, MapPin, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Course {
-  id?: string
-  name: string
-  code: string
-  department: string
-  lecturer: string
-  credits: number
-  semester: string
-  enrolled: number
-  capacity: number
-  schedule: string
-  room: string
-  status: string
-  level: string
-  description?: string
-  prerequisites?: string
+  id?: string;
+  name: string;
+  code: string;
+  department: string;
+  lecturer: string;
+  credits: number;
+  semester: string;
+  enrolled: number;
+  capacity: number;
+  schedule: string;
+  room: string;
+  status: string;
+  level: string;
+  description?: string;
+  prerequisites?: string;
 }
 
 interface CourseModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (course: Course) => void
-  course?: Course | null
-  mode: "create" | "edit"
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (course: Course) => void;
+  course?: Course | null;
+  mode: "create" | "edit";
 }
 
-export default function CourseModal({ isOpen, onClose, onSave, course, mode }: CourseModalProps) {
+export default function CourseModal({
+  isOpen,
+  onClose,
+  onSave,
+  course,
+  mode,
+}: CourseModalProps) {
   const [formData, setFormData] = useState<Course>({
     name: "",
     code: "",
@@ -53,13 +70,13 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
     level: "Undergraduate",
     description: "",
     prerequisites: "",
-  })
+  });
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (course && mode === "edit") {
-      setFormData(course)
+      setFormData(course);
     } else {
       setFormData({
         name: "",
@@ -76,41 +93,43 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
         level: "Undergraduate",
         description: "",
         prerequisites: "",
-      })
+      });
     }
-    setErrors({})
-  }, [course, mode, isOpen])
+    setErrors({});
+  }, [course, mode, isOpen]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) newErrors.name = "Course name is required"
-    if (!formData.code.trim()) newErrors.code = "Course code is required"
-    if (!formData.department) newErrors.department = "Department is required"
-    if (!formData.lecturer.trim()) newErrors.lecturer = "Lecturer is required"
-    if (formData.credits < 1 || formData.credits > 6) newErrors.credits = "Credits must be between 1 and 6"
-    if (formData.capacity < 1) newErrors.capacity = "Capacity must be at least 1"
-    if (!formData.schedule.trim()) newErrors.schedule = "Schedule is required"
-    if (!formData.room.trim()) newErrors.room = "Room is required"
+    if (!formData.name.trim()) newErrors.name = "Course name is required";
+    if (!formData.code.trim()) newErrors.code = "Course code is required";
+    if (!formData.department) newErrors.department = "Department is required";
+    if (!formData.lecturer.trim()) newErrors.lecturer = "Lecturer is required";
+    if (formData.credits < 1 || formData.credits > 6)
+      newErrors.credits = "Credits must be between 1 and 6";
+    if (formData.capacity < 1)
+      newErrors.capacity = "Capacity must be at least 1";
+    if (!formData.schedule.trim()) newErrors.schedule = "Schedule is required";
+    if (!formData.room.trim()) newErrors.room = "Room is required";
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (validateForm()) {
-      onSave(formData)
-      onClose()
+      onSave(formData);
+      onClose();
     }
-  }
+  };
 
   const handleChange = (field: keyof Course, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -137,7 +156,9 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                 placeholder="Enter course name"
                 className={errors.name ? "border-red-500" : ""}
               />
-              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name}</p>
+              )}
             </div>
 
             {/* Course Code */}
@@ -146,22 +167,33 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
               <Input
                 id="code"
                 value={formData.code}
-                onChange={(e) => handleChange("code", e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  handleChange("code", e.target.value.toUpperCase())
+                }
                 placeholder="e.g., CS101"
                 className={errors.code ? "border-red-500" : ""}
               />
-              {errors.code && <p className="text-sm text-red-500">{errors.code}</p>}
+              {errors.code && (
+                <p className="text-sm text-red-500">{errors.code}</p>
+              )}
             </div>
 
             {/* Department */}
             <div className="space-y-2">
               <Label>Department *</Label>
-              <Select value={formData.department} onValueChange={(value) => handleChange("department", value)}>
-                <SelectTrigger className={errors.department ? "border-red-500" : ""}>
+              <Select
+                value={formData.department}
+                onValueChange={(value) => handleChange("department", value)}
+              >
+                <SelectTrigger
+                  className={errors.department ? "border-red-500" : ""}
+                >
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Computer Science">Computer Science</SelectItem>
+                  <SelectItem value="Computer Science">
+                    Computer Science
+                  </SelectItem>
                   <SelectItem value="Engineering">Engineering</SelectItem>
                   <SelectItem value="Mathematics">Mathematics</SelectItem>
                   <SelectItem value="Physics">Physics</SelectItem>
@@ -169,7 +201,9 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                   <SelectItem value="English">English</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.department && <p className="text-sm text-red-500">{errors.department}</p>}
+              {errors.department && (
+                <p className="text-sm text-red-500">{errors.department}</p>
+              )}
             </div>
 
             {/* Lecturer */}
@@ -185,7 +219,9 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                 placeholder="Enter lecturer name"
                 className={errors.lecturer ? "border-red-500" : ""}
               />
-              {errors.lecturer && <p className="text-sm text-red-500">{errors.lecturer}</p>}
+              {errors.lecturer && (
+                <p className="text-sm text-red-500">{errors.lecturer}</p>
+              )}
             </div>
 
             {/* Credits */}
@@ -197,10 +233,14 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                 min="1"
                 max="6"
                 value={formData.credits}
-                onChange={(e) => handleChange("credits", Number.parseInt(e.target.value) || 3)}
+                onChange={(e) =>
+                  handleChange("credits", Number.parseInt(e.target.value) || 3)
+                }
                 className={errors.credits ? "border-red-500" : ""}
               />
-              {errors.credits && <p className="text-sm text-red-500">{errors.credits}</p>}
+              {errors.credits && (
+                <p className="text-sm text-red-500">{errors.credits}</p>
+              )}
             </div>
 
             {/* Semester */}
@@ -209,7 +249,10 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                 <Calendar className="h-4 w-4" />
                 Semester
               </Label>
-              <Select value={formData.semester} onValueChange={(value) => handleChange("semester", value)}>
+              <Select
+                value={formData.semester}
+                onValueChange={(value) => handleChange("semester", value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -232,10 +275,17 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                 type="number"
                 min="1"
                 value={formData.capacity}
-                onChange={(e) => handleChange("capacity", Number.parseInt(e.target.value) || 30)}
+                onChange={(e) =>
+                  handleChange(
+                    "capacity",
+                    Number.parseInt(e.target.value) || 30,
+                  )
+                }
                 className={errors.capacity ? "border-red-500" : ""}
               />
-              {errors.capacity && <p className="text-sm text-red-500">{errors.capacity}</p>}
+              {errors.capacity && (
+                <p className="text-sm text-red-500">{errors.capacity}</p>
+              )}
             </div>
 
             {/* Enrolled */}
@@ -246,7 +296,9 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                 type="number"
                 min="0"
                 value={formData.enrolled}
-                onChange={(e) => handleChange("enrolled", Number.parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleChange("enrolled", Number.parseInt(e.target.value) || 0)
+                }
               />
             </div>
 
@@ -263,7 +315,9 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                 placeholder="e.g., MWF 10:00-11:00"
                 className={errors.schedule ? "border-red-500" : ""}
               />
-              {errors.schedule && <p className="text-sm text-red-500">{errors.schedule}</p>}
+              {errors.schedule && (
+                <p className="text-sm text-red-500">{errors.schedule}</p>
+              )}
             </div>
 
             {/* Room */}
@@ -279,13 +333,18 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
                 placeholder="e.g., CS-201"
                 className={errors.room ? "border-red-500" : ""}
               />
-              {errors.room && <p className="text-sm text-red-500">{errors.room}</p>}
+              {errors.room && (
+                <p className="text-sm text-red-500">{errors.room}</p>
+              )}
             </div>
 
             {/* Level */}
             <div className="space-y-2">
               <Label>Level</Label>
-              <Select value={formData.level} onValueChange={(value) => handleChange("level", value)}>
+              <Select
+                value={formData.level}
+                onValueChange={(value) => handleChange("level", value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -300,7 +359,10 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
             {/* Status */}
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleChange("status", value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -347,5 +409,5 @@ export default function CourseModal({ isOpen, onClose, onSave, course, mode }: C
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

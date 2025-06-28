@@ -1,25 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Bell, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Bell, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Notification {
   id?: string;
   user_id: string;
   title: string;
   message: string;
-  notification_type: 'info' | 'success' | 'warning' | 'error' | 'reminder' | 'announcement';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'unread' | 'read' | 'archived';
-  category: 'academic' | 'financial' | 'administrative' | 'personal' | 'system';
+  notification_type:
+    | "info"
+    | "success"
+    | "warning"
+    | "error"
+    | "reminder"
+    | "announcement";
+  priority: "low" | "medium" | "high" | "urgent";
+  status: "unread" | "read" | "archived";
+  category: "academic" | "financial" | "administrative" | "personal" | "system";
   action_url?: string;
   scheduled_date?: Date;
   read_date?: Date;
@@ -43,20 +64,20 @@ export function NotificationModal({
   onSave,
   notification,
   users,
-  isLoading = false
+  isLoading = false,
 }: NotificationModalProps) {
   const [formData, setFormData] = useState<Notification>({
-    user_id: '',
-    title: '',
-    message: '',
-    notification_type: 'info',
-    priority: 'medium',
-    status: 'unread',
-    category: 'administrative',
-    action_url: '',
+    user_id: "",
+    title: "",
+    message: "",
+    notification_type: "info",
+    priority: "medium",
+    status: "unread",
+    category: "administrative",
+    action_url: "",
     scheduled_date: undefined,
     read_date: undefined,
-    is_important: false
+    is_important: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -65,22 +86,26 @@ export function NotificationModal({
     if (notification) {
       setFormData({
         ...notification,
-        scheduled_date: notification.scheduled_date ? new Date(notification.scheduled_date) : undefined,
-        read_date: notification.read_date ? new Date(notification.read_date) : undefined
+        scheduled_date: notification.scheduled_date
+          ? new Date(notification.scheduled_date)
+          : undefined,
+        read_date: notification.read_date
+          ? new Date(notification.read_date)
+          : undefined,
       });
     } else {
       setFormData({
-        user_id: '',
-        title: '',
-        message: '',
-        notification_type: 'info',
-        priority: 'medium',
-        status: 'unread',
-        category: 'administrative',
-        action_url: '',
+        user_id: "",
+        title: "",
+        message: "",
+        notification_type: "info",
+        priority: "medium",
+        status: "unread",
+        category: "administrative",
+        action_url: "",
         scheduled_date: undefined,
         read_date: undefined,
-        is_important: false
+        is_important: false,
       });
     }
     setErrors({});
@@ -90,13 +115,13 @@ export function NotificationModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.user_id) {
-      newErrors.user_id = 'User is required';
+      newErrors.user_id = "User is required";
     }
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     }
     if (!formData.message.trim()) {
-      newErrors.message = 'Message is required';
+      newErrors.message = "Message is required";
     }
 
     setErrors(newErrors);
@@ -111,30 +136,41 @@ export function NotificationModal({
   };
 
   const handleInputChange = (field: keyof Notification, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'success': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'error': return 'text-red-600';
-      case 'reminder': return 'text-blue-600';
-      case 'announcement': return 'text-purple-600';
-      default: return 'text-gray-600';
+      case "success":
+        return "text-green-600";
+      case "warning":
+        return "text-yellow-600";
+      case "error":
+        return "text-red-600";
+      case "reminder":
+        return "text-blue-600";
+      case "announcement":
+        return "text-purple-600";
+      default:
+        return "text-gray-600";
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600';
-      case 'high': return 'text-orange-600';
-      case 'medium': return 'text-yellow-600';
-      case 'low': return 'text-green-600';
-      default: return 'text-gray-600';
+      case "urgent":
+        return "text-red-600";
+      case "high":
+        return "text-orange-600";
+      case "medium":
+        return "text-yellow-600";
+      case "low":
+        return "text-green-600";
+      default:
+        return "text-gray-600";
     }
   };
 
@@ -143,19 +179,21 @@ export function NotificationModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {notification ? 'Edit Notification' : 'Create New Notification'}
+            {notification ? "Edit Notification" : "Create New Notification"}
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="user_id">User</Label>
               <Select
                 value={formData.user_id}
-                onValueChange={(value) => handleInputChange('user_id', value)}
+                onValueChange={(value) => handleInputChange("user_id", value)}
               >
-                <SelectTrigger className={cn(errors.user_id && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.user_id && "border-red-500")}
+                >
                   <SelectValue placeholder="Select user" />
                 </SelectTrigger>
                 <SelectContent>
@@ -175,18 +213,32 @@ export function NotificationModal({
               <Label htmlFor="notification_type">Type</Label>
               <Select
                 value={formData.notification_type}
-                onValueChange={(value) => handleInputChange('notification_type', value)}
+                onValueChange={(value) =>
+                  handleInputChange("notification_type", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="info" className="text-gray-600">Information</SelectItem>
-                  <SelectItem value="success" className="text-green-600">Success</SelectItem>
-                  <SelectItem value="warning" className="text-yellow-600">Warning</SelectItem>
-                  <SelectItem value="error" className="text-red-600">Error</SelectItem>
-                  <SelectItem value="reminder" className="text-blue-600">Reminder</SelectItem>
-                  <SelectItem value="announcement" className="text-purple-600">Announcement</SelectItem>
+                  <SelectItem value="info" className="text-gray-600">
+                    Information
+                  </SelectItem>
+                  <SelectItem value="success" className="text-green-600">
+                    Success
+                  </SelectItem>
+                  <SelectItem value="warning" className="text-yellow-600">
+                    Warning
+                  </SelectItem>
+                  <SelectItem value="error" className="text-red-600">
+                    Error
+                  </SelectItem>
+                  <SelectItem value="reminder" className="text-blue-600">
+                    Reminder
+                  </SelectItem>
+                  <SelectItem value="announcement" className="text-purple-600">
+                    Announcement
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -195,7 +247,7 @@ export function NotificationModal({
               <Label htmlFor="category">Category</Label>
               <Select
                 value={formData.category}
-                onValueChange={(value) => handleInputChange('category', value)}
+                onValueChange={(value) => handleInputChange("category", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -214,16 +266,24 @@ export function NotificationModal({
               <Label htmlFor="priority">Priority</Label>
               <Select
                 value={formData.priority}
-                onValueChange={(value) => handleInputChange('priority', value)}
+                onValueChange={(value) => handleInputChange("priority", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low" className="text-green-600">Low</SelectItem>
-                  <SelectItem value="medium" className="text-yellow-600">Medium</SelectItem>
-                  <SelectItem value="high" className="text-orange-600">High</SelectItem>
-                  <SelectItem value="urgent" className="text-red-600">Urgent</SelectItem>
+                  <SelectItem value="low" className="text-green-600">
+                    Low
+                  </SelectItem>
+                  <SelectItem value="medium" className="text-yellow-600">
+                    Medium
+                  </SelectItem>
+                  <SelectItem value="high" className="text-orange-600">
+                    High
+                  </SelectItem>
+                  <SelectItem value="urgent" className="text-red-600">
+                    Urgent
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -232,7 +292,7 @@ export function NotificationModal({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
+                onValueChange={(value) => handleInputChange("status", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -252,13 +312,13 @@ export function NotificationModal({
                   <Button
                     variant="outline"
                     className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !formData.scheduled_date && 'text-muted-foreground'
+                      "w-full justify-start text-left font-normal",
+                      !formData.scheduled_date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.scheduled_date ? (
-                      format(formData.scheduled_date, 'PPP')
+                      format(formData.scheduled_date, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -268,7 +328,9 @@ export function NotificationModal({
                   <Calendar
                     mode="single"
                     selected={formData.scheduled_date}
-                    onSelect={(date) => handleInputChange('scheduled_date', date)}
+                    onSelect={(date) =>
+                      handleInputChange("scheduled_date", date)
+                    }
                     initialFocus
                   />
                 </PopoverContent>
@@ -282,9 +344,9 @@ export function NotificationModal({
               id="title"
               type="text"
               value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
+              onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder="Enter notification title"
-              className={cn(errors.title && 'border-red-500')}
+              className={cn(errors.title && "border-red-500")}
             />
             {errors.title && (
               <p className="text-sm text-red-500">{errors.title}</p>
@@ -296,10 +358,10 @@ export function NotificationModal({
             <Textarea
               id="message"
               value={formData.message}
-              onChange={(e) => handleInputChange('message', e.target.value)}
+              onChange={(e) => handleInputChange("message", e.target.value)}
               placeholder="Enter notification message..."
               rows={4}
-              className={cn(errors.message && 'border-red-500')}
+              className={cn(errors.message && "border-red-500")}
             />
             {errors.message && (
               <p className="text-sm text-red-500">{errors.message}</p>
@@ -311,8 +373,8 @@ export function NotificationModal({
             <Input
               id="action_url"
               type="url"
-              value={formData.action_url || ''}
-              onChange={(e) => handleInputChange('action_url', e.target.value)}
+              value={formData.action_url || ""}
+              onChange={(e) => handleInputChange("action_url", e.target.value)}
               placeholder="https://example.com/action"
             />
           </div>
@@ -322,7 +384,9 @@ export function NotificationModal({
               type="checkbox"
               id="is_important"
               checked={formData.is_important}
-              onChange={(e) => handleInputChange('is_important', e.target.checked)}
+              onChange={(e) =>
+                handleInputChange("is_important", e.target.checked)
+              }
               className="rounded"
             />
             <Label htmlFor="is_important">Mark as Important</Label>
@@ -334,21 +398,41 @@ export function NotificationModal({
               <h4 className="font-medium mb-2">Notification Preview</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center space-x-2">
-                  <Bell className={cn('h-4 w-4', getTypeColor(formData.notification_type))} />
-                  <span className={cn('font-medium', getTypeColor(formData.notification_type))}>
-                    {formData.notification_type.charAt(0).toUpperCase() + formData.notification_type.slice(1)}
+                  <Bell
+                    className={cn(
+                      "h-4 w-4",
+                      getTypeColor(formData.notification_type),
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "font-medium",
+                      getTypeColor(formData.notification_type),
+                    )}
+                  >
+                    {formData.notification_type.charAt(0).toUpperCase() +
+                      formData.notification_type.slice(1)}
                   </span>
-                  <span className={cn('font-medium', getPriorityColor(formData.priority))}>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      getPriorityColor(formData.priority),
+                    )}
+                  >
                     ({formData.priority})
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Title:</span>
-                  <span className="text-gray-600 ml-2">{formData.title || 'No title'}</span>
+                  <span className="text-gray-600 ml-2">
+                    {formData.title || "No title"}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Category:</span>
-                  <span className="text-gray-600 ml-2 capitalize">{formData.category}</span>
+                  <span className="text-gray-600 ml-2 capitalize">
+                    {formData.category}
+                  </span>
                 </div>
                 {formData.message && (
                   <div>
@@ -368,11 +452,11 @@ export function NotificationModal({
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {notification ? 'Update' : 'Create'} Notification
+              {notification ? "Update" : "Create"} Notification
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-} 
+}

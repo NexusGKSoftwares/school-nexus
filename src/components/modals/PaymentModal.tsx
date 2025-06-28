@@ -1,15 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Payment {
   id?: string;
@@ -19,7 +34,7 @@ interface Payment {
   payment_date: Date;
   payment_method: string;
   transaction_id?: string;
-  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  status: "pending" | "completed" | "failed" | "refunded";
   reference_number?: string;
   notes?: string;
   created_at?: string;
@@ -43,18 +58,18 @@ export function PaymentModal({
   payment,
   students,
   tuitions = [],
-  isLoading = false
+  isLoading = false,
 }: PaymentModalProps) {
   const [formData, setFormData] = useState<Payment>({
-    student_id: '',
-    tuition_id: '',
+    student_id: "",
+    tuition_id: "",
     amount: 0,
     payment_date: new Date(),
-    payment_method: '',
-    transaction_id: '',
-    status: 'pending',
-    reference_number: '',
-    notes: ''
+    payment_method: "",
+    transaction_id: "",
+    status: "pending",
+    reference_number: "",
+    notes: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -63,19 +78,21 @@ export function PaymentModal({
     if (payment) {
       setFormData({
         ...payment,
-        payment_date: payment.payment_date ? new Date(payment.payment_date) : new Date()
+        payment_date: payment.payment_date
+          ? new Date(payment.payment_date)
+          : new Date(),
       });
     } else {
       setFormData({
-        student_id: '',
-        tuition_id: '',
+        student_id: "",
+        tuition_id: "",
         amount: 0,
         payment_date: new Date(),
-        payment_method: '',
-        transaction_id: '',
-        status: 'pending',
-        reference_number: '',
-        notes: ''
+        payment_method: "",
+        transaction_id: "",
+        status: "pending",
+        reference_number: "",
+        notes: "",
       });
     }
     setErrors({});
@@ -85,13 +102,13 @@ export function PaymentModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.student_id) {
-      newErrors.student_id = 'Student is required';
+      newErrors.student_id = "Student is required";
     }
     if (!formData.payment_method) {
-      newErrors.payment_method = 'Payment method is required';
+      newErrors.payment_method = "Payment method is required";
     }
     if (formData.amount <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = "Amount must be greater than 0";
     }
 
     setErrors(newErrors);
@@ -106,9 +123,9 @@ export function PaymentModal({
   };
 
   const handleInputChange = (field: keyof Payment, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -123,19 +140,23 @@ export function PaymentModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {payment ? 'Edit Payment' : 'Add New Payment'}
+            {payment ? "Edit Payment" : "Add New Payment"}
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="student_id">Student</Label>
               <Select
                 value={formData.student_id}
-                onValueChange={(value) => handleInputChange('student_id', value)}
+                onValueChange={(value) =>
+                  handleInputChange("student_id", value)
+                }
               >
-                <SelectTrigger className={cn(errors.student_id && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.student_id && "border-red-500")}
+                >
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,8 +175,10 @@ export function PaymentModal({
             <div className="space-y-2">
               <Label htmlFor="tuition_id">Tuition (Optional)</Label>
               <Select
-                value={formData.tuition_id || ''}
-                onValueChange={(value) => handleInputChange('tuition_id', value)}
+                value={formData.tuition_id || ""}
+                onValueChange={(value) =>
+                  handleInputChange("tuition_id", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select tuition" />
@@ -164,7 +187,8 @@ export function PaymentModal({
                   <SelectItem value="">No specific tuition</SelectItem>
                   {tuitions.map((tuition) => (
                     <SelectItem key={tuition.id} value={tuition.id}>
-                      ${tuition.amount} - Due: {format(new Date(tuition.due_date), 'MMM dd, yyyy')}
+                      ${tuition.amount} - Due:{" "}
+                      {format(new Date(tuition.due_date), "MMM dd, yyyy")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -179,9 +203,11 @@ export function PaymentModal({
                 step="0.01"
                 min="0"
                 value={formData.amount}
-                onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleInputChange("amount", parseFloat(e.target.value) || 0)
+                }
                 placeholder="0.00"
-                className={cn(errors.amount && 'border-red-500')}
+                className={cn(errors.amount && "border-red-500")}
               />
               {errors.amount && (
                 <p className="text-sm text-red-500">{errors.amount}</p>
@@ -192,9 +218,13 @@ export function PaymentModal({
               <Label htmlFor="payment_method">Payment Method</Label>
               <Select
                 value={formData.payment_method}
-                onValueChange={(value) => handleInputChange('payment_method', value)}
+                onValueChange={(value) =>
+                  handleInputChange("payment_method", value)
+                }
               >
-                <SelectTrigger className={cn(errors.payment_method && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.payment_method && "border-red-500")}
+                >
                   <SelectValue placeholder="Select payment method" />
                 </SelectTrigger>
                 <SelectContent>
@@ -219,13 +249,13 @@ export function PaymentModal({
                   <Button
                     variant="outline"
                     className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !formData.payment_date && 'text-muted-foreground'
+                      "w-full justify-start text-left font-normal",
+                      !formData.payment_date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.payment_date ? (
-                      format(formData.payment_date, 'PPP')
+                      format(formData.payment_date, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -235,7 +265,7 @@ export function PaymentModal({
                   <Calendar
                     mode="single"
                     selected={formData.payment_date}
-                    onSelect={(date) => handleInputChange('payment_date', date)}
+                    onSelect={(date) => handleInputChange("payment_date", date)}
                     initialFocus
                   />
                 </PopoverContent>
@@ -246,7 +276,7 @@ export function PaymentModal({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
+                onValueChange={(value) => handleInputChange("status", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -265,8 +295,10 @@ export function PaymentModal({
               <Input
                 id="transaction_id"
                 type="text"
-                value={formData.transaction_id || ''}
-                onChange={(e) => handleInputChange('transaction_id', e.target.value)}
+                value={formData.transaction_id || ""}
+                onChange={(e) =>
+                  handleInputChange("transaction_id", e.target.value)
+                }
                 placeholder="Transaction ID from payment processor"
               />
             </div>
@@ -277,14 +309,21 @@ export function PaymentModal({
                 <Input
                   id="reference_number"
                   type="text"
-                  value={formData.reference_number || ''}
-                  onChange={(e) => handleInputChange('reference_number', e.target.value)}
+                  value={formData.reference_number || ""}
+                  onChange={(e) =>
+                    handleInputChange("reference_number", e.target.value)
+                  }
                   placeholder="Payment reference number"
                 />
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleInputChange('reference_number', generateReferenceNumber())}
+                  onClick={() =>
+                    handleInputChange(
+                      "reference_number",
+                      generateReferenceNumber(),
+                    )
+                  }
                 >
                   Generate
                 </Button>
@@ -296,8 +335,8 @@ export function PaymentModal({
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
-              value={formData.notes || ''}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
+              value={formData.notes || ""}
+              onChange={(e) => handleInputChange("notes", e.target.value)}
               placeholder="Additional notes about the payment..."
               rows={3}
             />
@@ -309,11 +348,11 @@ export function PaymentModal({
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {payment ? 'Update' : 'Create'} Payment
+              {payment ? "Update" : "Create"} Payment
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-} 
+}

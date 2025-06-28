@@ -1,15 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Refund {
   id?: string;
@@ -19,7 +34,7 @@ interface Refund {
   amount: number;
   reason: string;
   refund_date: Date;
-  status: 'pending' | 'approved' | 'processed' | 'completed' | 'rejected';
+  status: "pending" | "approved" | "processed" | "completed" | "rejected";
   refund_method: string;
   reference_number?: string;
   notes?: string;
@@ -46,19 +61,19 @@ export function RefundModal({
   students,
   payments = [],
   tuitions = [],
-  isLoading = false
+  isLoading = false,
 }: RefundModalProps) {
   const [formData, setFormData] = useState<Refund>({
-    student_id: '',
-    payment_id: '',
-    tuition_id: '',
+    student_id: "",
+    payment_id: "",
+    tuition_id: "",
     amount: 0,
-    reason: '',
+    reason: "",
     refund_date: new Date(),
-    status: 'pending',
-    refund_method: '',
-    reference_number: '',
-    notes: ''
+    status: "pending",
+    refund_method: "",
+    reference_number: "",
+    notes: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,20 +82,22 @@ export function RefundModal({
     if (refund) {
       setFormData({
         ...refund,
-        refund_date: refund.refund_date ? new Date(refund.refund_date) : new Date()
+        refund_date: refund.refund_date
+          ? new Date(refund.refund_date)
+          : new Date(),
       });
     } else {
       setFormData({
-        student_id: '',
-        payment_id: '',
-        tuition_id: '',
+        student_id: "",
+        payment_id: "",
+        tuition_id: "",
         amount: 0,
-        reason: '',
+        reason: "",
         refund_date: new Date(),
-        status: 'pending',
-        refund_method: '',
-        reference_number: '',
-        notes: ''
+        status: "pending",
+        refund_method: "",
+        reference_number: "",
+        notes: "",
       });
     }
     setErrors({});
@@ -90,16 +107,16 @@ export function RefundModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.student_id) {
-      newErrors.student_id = 'Student is required';
+      newErrors.student_id = "Student is required";
     }
     if (!formData.reason.trim()) {
-      newErrors.reason = 'Reason is required';
+      newErrors.reason = "Reason is required";
     }
     if (formData.amount <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = "Amount must be greater than 0";
     }
     if (!formData.refund_method) {
-      newErrors.refund_method = 'Refund method is required';
+      newErrors.refund_method = "Refund method is required";
     }
 
     setErrors(newErrors);
@@ -114,9 +131,9 @@ export function RefundModal({
   };
 
   const handleInputChange = (field: keyof Refund, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -130,20 +147,22 @@ export function RefundModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {refund ? 'Edit Refund' : 'Add New Refund'}
-          </DialogTitle>
+          <DialogTitle>{refund ? "Edit Refund" : "Add New Refund"}</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="student_id">Student</Label>
               <Select
                 value={formData.student_id}
-                onValueChange={(value) => handleInputChange('student_id', value)}
+                onValueChange={(value) =>
+                  handleInputChange("student_id", value)
+                }
               >
-                <SelectTrigger className={cn(errors.student_id && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.student_id && "border-red-500")}
+                >
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent>
@@ -167,9 +186,11 @@ export function RefundModal({
                 step="0.01"
                 min="0"
                 value={formData.amount}
-                onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleInputChange("amount", parseFloat(e.target.value) || 0)
+                }
                 placeholder="0.00"
-                className={cn(errors.amount && 'border-red-500')}
+                className={cn(errors.amount && "border-red-500")}
               />
               {errors.amount && (
                 <p className="text-sm text-red-500">{errors.amount}</p>
@@ -179,8 +200,10 @@ export function RefundModal({
             <div className="space-y-2">
               <Label htmlFor="payment_id">Related Payment (Optional)</Label>
               <Select
-                value={formData.payment_id || ''}
-                onValueChange={(value) => handleInputChange('payment_id', value)}
+                value={formData.payment_id || ""}
+                onValueChange={(value) =>
+                  handleInputChange("payment_id", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select payment" />
@@ -189,7 +212,8 @@ export function RefundModal({
                   <SelectItem value="">No specific payment</SelectItem>
                   {payments.map((payment) => (
                     <SelectItem key={payment.id} value={payment.id}>
-                      ${payment.amount} - {format(new Date(payment.payment_date), 'MMM dd, yyyy')}
+                      ${payment.amount} -{" "}
+                      {format(new Date(payment.payment_date), "MMM dd, yyyy")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -199,8 +223,10 @@ export function RefundModal({
             <div className="space-y-2">
               <Label htmlFor="tuition_id">Related Tuition (Optional)</Label>
               <Select
-                value={formData.tuition_id || ''}
-                onValueChange={(value) => handleInputChange('tuition_id', value)}
+                value={formData.tuition_id || ""}
+                onValueChange={(value) =>
+                  handleInputChange("tuition_id", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select tuition" />
@@ -209,7 +235,8 @@ export function RefundModal({
                   <SelectItem value="">No specific tuition</SelectItem>
                   {tuitions.map((tuition) => (
                     <SelectItem key={tuition.id} value={tuition.id}>
-                      ${tuition.amount} - Due: {format(new Date(tuition.due_date), 'MMM dd, yyyy')}
+                      ${tuition.amount} - Due:{" "}
+                      {format(new Date(tuition.due_date), "MMM dd, yyyy")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -223,13 +250,13 @@ export function RefundModal({
                   <Button
                     variant="outline"
                     className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !formData.refund_date && 'text-muted-foreground'
+                      "w-full justify-start text-left font-normal",
+                      !formData.refund_date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.refund_date ? (
-                      format(formData.refund_date, 'PPP')
+                      format(formData.refund_date, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -239,7 +266,7 @@ export function RefundModal({
                   <Calendar
                     mode="single"
                     selected={formData.refund_date}
-                    onSelect={(date) => handleInputChange('refund_date', date)}
+                    onSelect={(date) => handleInputChange("refund_date", date)}
                     initialFocus
                   />
                 </PopoverContent>
@@ -250,7 +277,7 @@ export function RefundModal({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
+                onValueChange={(value) => handleInputChange("status", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -269,17 +296,25 @@ export function RefundModal({
               <Label htmlFor="refund_method">Refund Method</Label>
               <Select
                 value={formData.refund_method}
-                onValueChange={(value) => handleInputChange('refund_method', value)}
+                onValueChange={(value) =>
+                  handleInputChange("refund_method", value)
+                }
               >
-                <SelectTrigger className={cn(errors.refund_method && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.refund_method && "border-red-500")}
+                >
                   <SelectValue placeholder="Select refund method" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="credit_card">Credit Card Refund</SelectItem>
+                  <SelectItem value="credit_card">
+                    Credit Card Refund
+                  </SelectItem>
                   <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                   <SelectItem value="check">Check</SelectItem>
                   <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="credit_account">Credit to Account</SelectItem>
+                  <SelectItem value="credit_account">
+                    Credit to Account
+                  </SelectItem>
                 </SelectContent>
               </Select>
               {errors.refund_method && (
@@ -293,14 +328,21 @@ export function RefundModal({
                 <Input
                   id="reference_number"
                   type="text"
-                  value={formData.reference_number || ''}
-                  onChange={(e) => handleInputChange('reference_number', e.target.value)}
+                  value={formData.reference_number || ""}
+                  onChange={(e) =>
+                    handleInputChange("reference_number", e.target.value)
+                  }
                   placeholder="Refund reference number"
                 />
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleInputChange('reference_number', generateReferenceNumber())}
+                  onClick={() =>
+                    handleInputChange(
+                      "reference_number",
+                      generateReferenceNumber(),
+                    )
+                  }
                 >
                   Generate
                 </Button>
@@ -313,10 +355,10 @@ export function RefundModal({
             <Textarea
               id="reason"
               value={formData.reason}
-              onChange={(e) => handleInputChange('reason', e.target.value)}
+              onChange={(e) => handleInputChange("reason", e.target.value)}
               placeholder="Explain the reason for this refund..."
               rows={3}
-              className={cn(errors.reason && 'border-red-500')}
+              className={cn(errors.reason && "border-red-500")}
             />
             {errors.reason && (
               <p className="text-sm text-red-500">{errors.reason}</p>
@@ -327,8 +369,8 @@ export function RefundModal({
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
-              value={formData.notes || ''}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
+              value={formData.notes || ""}
+              onChange={(e) => handleInputChange("notes", e.target.value)}
               placeholder="Additional notes about the refund..."
               rows={3}
             />
@@ -340,11 +382,11 @@ export function RefundModal({
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {refund ? 'Update' : 'Create'} Refund
+              {refund ? "Update" : "Create"} Refund
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-} 
+}

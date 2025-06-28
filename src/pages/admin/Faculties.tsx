@@ -1,79 +1,117 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Building2, Search, Plus, Edit, Trash2, Users, BookOpen, GraduationCap, Eye, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  Building2,
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Users,
+  BookOpen,
+  GraduationCap,
+  Eye,
+  Loader2,
+} from "lucide-react";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { facultyService, lecturerService, studentService, courseService } from "@/lib/dataService"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  facultyService,
+  lecturerService,
+  studentService,
+  courseService,
+} from "@/lib/dataService";
 
 interface Faculty {
-  id: string
-  name: string
-  dean: string
-  departments: number
-  lecturers: number
-  students: number
-  courses: number
-  established: string
-  status: string
-  description: string
+  id: string;
+  name: string;
+  dean: string;
+  departments: number;
+  lecturers: number;
+  students: number;
+  courses: number;
+  established: string;
+  status: string;
+  description: string;
 }
 
 interface Department {
-  id: string
-  name: string
-  faculty: string
-  head: string
-  lecturers: number
-  students: number
-  courses: number
-  status: string
+  id: string;
+  name: string;
+  faculty: string;
+  head: string;
+  lecturers: number;
+  students: number;
+  courses: number;
+  status: string;
 }
 
 export default function AdminFaculties() {
-  const [facultiesData, setFacultiesData] = useState<Faculty[]>([])
-  const [departmentsData, setDepartmentsData] = useState<Department[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [activeTab, setActiveTab] = useState("faculties")
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [facultiesData, setFacultiesData] = useState<Faculty[]>([]);
+  const [departmentsData, setDepartmentsData] = useState<Department[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("faculties");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
-      setLoading(true)
-      
+      setLoading(true);
+
       // Fetch faculties
-      const { data: faculties, error: facultiesError } = await facultyService.getFaculties()
-      
+      const { data: faculties, error: facultiesError } =
+        await facultyService.getFaculties();
+
       if (facultiesError) {
-        setError(facultiesError.message)
-        return
+        setError(facultiesError.message);
+        return;
       }
 
       // Fetch lecturers for counting
-      const { data: lecturers } = await lecturerService.getLecturers()
-      
+      const { data: lecturers } = await lecturerService.getLecturers();
+
       // Fetch students for counting
-      const { data: students } = await studentService.getStudents()
-      
+      const { data: students } = await studentService.getStudents();
+
       // Fetch courses for counting
-      const { data: courses } = await courseService.getCourses()
+      const { data: courses } = await courseService.getCourses();
 
       if (faculties) {
         const transformedFaculties: Faculty[] = faculties.map((faculty) => {
-          const facultyLecturers = lecturers?.filter(l => l.faculty.id === faculty.id).length || 0
-          const facultyStudents = students?.filter(s => s.faculty.id === faculty.id).length || 0
-          const facultyCourses = courses?.filter(c => c.faculty.id === faculty.id).length || 0
-          
+          const facultyLecturers =
+            lecturers?.filter((l) => l.faculty.id === faculty.id).length || 0;
+          const facultyStudents =
+            students?.filter((s) => s.faculty.id === faculty.id).length || 0;
+          const facultyCourses =
+            courses?.filter((c) => c.faculty.id === faculty.id).length || 0;
+
           return {
             id: faculty.id,
             name: faculty.name,
@@ -85,43 +123,48 @@ export default function AdminFaculties() {
             established: faculty.established_year || "N/A",
             status: faculty.status,
             description: faculty.description || `${faculty.name} programs`,
-          }
-        })
-        setFacultiesData(transformedFaculties)
+          };
+        });
+        setFacultiesData(transformedFaculties);
 
         // Generate departments data based on faculties
-        const mockDepartments: Department[] = faculties.map((faculty, index) => ({
-          id: `DEPT${String(index + 1).padStart(3, '0')}`,
-          name: `${faculty.name} Department`,
-          faculty: faculty.name,
-          head: faculty.dean || "TBD",
-          lecturers: lecturers?.filter(l => l.faculty.id === faculty.id).length || 0,
-          students: students?.filter(s => s.faculty.id === faculty.id).length || 0,
-          courses: courses?.filter(c => c.faculty.id === faculty.id).length || 0,
-          status: "Active",
-        }))
-        setDepartmentsData(mockDepartments)
+        const mockDepartments: Department[] = faculties.map(
+          (faculty, index) => ({
+            id: `DEPT${String(index + 1).padStart(3, "0")}`,
+            name: `${faculty.name} Department`,
+            faculty: faculty.name,
+            head: faculty.dean || "TBD",
+            lecturers:
+              lecturers?.filter((l) => l.faculty.id === faculty.id).length || 0,
+            students:
+              students?.filter((s) => s.faculty.id === faculty.id).length || 0,
+            courses:
+              courses?.filter((c) => c.faculty.id === faculty.id).length || 0,
+            status: "Active",
+          }),
+        );
+        setDepartmentsData(mockDepartments);
       }
     } catch (err) {
-      setError("Failed to fetch faculties data")
-      console.error("Error fetching faculties data:", err)
+      setError("Failed to fetch faculties data");
+      console.error("Error fetching faculties data:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filteredFaculties = facultiesData.filter(
     (faculty) =>
       faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       faculty.dean.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  );
 
   const filteredDepartments = departmentsData.filter(
     (dept) =>
       dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       dept.head.toLowerCase().includes(searchTerm.toLowerCase()) ||
       dept.faculty.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  );
 
   if (loading) {
     return (
@@ -131,7 +174,7 @@ export default function AdminFaculties() {
           <span>Loading faculties data...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -142,7 +185,7 @@ export default function AdminFaculties() {
           <Button onClick={fetchData}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -150,8 +193,12 @@ export default function AdminFaculties() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Faculties & Departments</h1>
-          <p className="text-gray-600">Manage academic faculties and their departments</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Faculties & Departments
+          </h1>
+          <p className="text-gray-600">
+            Manage academic faculties and their departments
+          </p>
         </div>
         <div className="flex items-center gap-4">
           <Button className="bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white">
@@ -170,7 +217,9 @@ export default function AdminFaculties() {
                 <Building2 className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{facultiesData.length}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {facultiesData.length}
+                </div>
                 <div className="text-sm text-gray-600">Total Faculties</div>
               </div>
             </div>
@@ -184,7 +233,9 @@ export default function AdminFaculties() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{departmentsData.length}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {departmentsData.length}
+                </div>
                 <div className="text-sm text-gray-600">Total Departments</div>
               </div>
             </div>
@@ -199,7 +250,10 @@ export default function AdminFaculties() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {facultiesData.reduce((sum, faculty) => sum + faculty.lecturers, 0)}
+                  {facultiesData.reduce(
+                    (sum, faculty) => sum + faculty.lecturers,
+                    0,
+                  )}
                 </div>
                 <div className="text-sm text-gray-600">Total Lecturers</div>
               </div>
@@ -215,7 +269,10 @@ export default function AdminFaculties() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {facultiesData.reduce((sum, faculty) => sum + faculty.courses, 0)}
+                  {facultiesData.reduce(
+                    (sum, faculty) => sum + faculty.courses,
+                    0,
+                  )}
                 </div>
                 <div className="text-sm text-gray-600">Total Courses</div>
               </div>
@@ -265,13 +322,17 @@ export default function AdminFaculties() {
               <Building2 className="h-5 w-5 text-blue-600" />
               Faculty Management
             </CardTitle>
-            <CardDescription>Manage academic faculties and their programs</CardDescription>
+            <CardDescription>
+              Manage academic faculties and their programs
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {filteredFaculties.length === 0 ? (
               <div className="text-center py-8">
                 <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No faculties found matching your criteria.</p>
+                <p className="text-gray-500">
+                  No faculties found matching your criteria.
+                </p>
               </div>
             ) : (
               <Table>
@@ -292,8 +353,12 @@ export default function AdminFaculties() {
                     <TableRow key={faculty.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium text-gray-900">{faculty.name}</div>
-                          <div className="text-sm text-gray-600">{faculty.description}</div>
+                          <div className="font-medium text-gray-900">
+                            {faculty.name}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {faculty.description}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{faculty.dean}</TableCell>
@@ -349,13 +414,17 @@ export default function AdminFaculties() {
               <Users className="h-5 w-5 text-green-600" />
               Department Management
             </CardTitle>
-            <CardDescription>Manage academic departments within faculties</CardDescription>
+            <CardDescription>
+              Manage academic departments within faculties
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {filteredDepartments.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No departments found matching your criteria.</p>
+                <p className="text-gray-500">
+                  No departments found matching your criteria.
+                </p>
               </div>
             ) : (
               <Table>
@@ -375,7 +444,9 @@ export default function AdminFaculties() {
                   {filteredDepartments.map((dept) => (
                     <TableRow key={dept.id}>
                       <TableCell>
-                        <div className="font-medium text-gray-900">{dept.name}</div>
+                        <div className="font-medium text-gray-900">
+                          {dept.name}
+                        </div>
                       </TableCell>
                       <TableCell>{dept.faculty}</TableCell>
                       <TableCell>{dept.head}</TableCell>
@@ -422,5 +493,5 @@ export default function AdminFaculties() {
         </Card>
       )}
     </div>
-  )
+  );
 }

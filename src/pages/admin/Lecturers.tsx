@@ -1,14 +1,41 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Users, Search, Filter, Download, Plus, Edit, Trash2, Eye, Mail, Calendar, BookOpen, Award, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  Users,
+  Search,
+  Filter,
+  Download,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Mail,
+  Calendar,
+  BookOpen,
+  Award,
+  Loader2,
+} from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,45 +43,47 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useToast } from "@/hooks/use-toast"
-import { lecturerService, courseService } from "@/lib/dataService"
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import { lecturerService, courseService } from "@/lib/dataService";
 
 // Import modals
-import LecturerModal from "@/components/modals/LecturerModal"
-import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal"
+import LecturerModal from "@/components/modals/LecturerModal";
+import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal";
 
-import { Lecturer }  from "@/components/modals/LecturerModal"
+import { Lecturer } from "@/components/modals/LecturerModal";
 
 export default function AdminLecturers() {
-  const [lecturersData, setLecturersData] = useState<Lecturer[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedDepartment, setSelectedDepartment] = useState("All")
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [departments, setDepartments] = useState<string[]>([])
+  const [lecturersData, setLecturersData] = useState<Lecturer[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [departments, setDepartments] = useState<string[]>([]);
 
   // Modal states
-  const [isLecturerModalOpen, setIsLecturerModalOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedLecturer, setSelectedLecturer] = useState<Lecturer | null>(null)
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLecturerModalOpen, setIsLecturerModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedLecturer, setSelectedLecturer] = useState<Lecturer | null>(
+    null,
+  );
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchLecturers()
-  }, [])
+    fetchLecturers();
+  }, []);
 
   const fetchLecturers = async () => {
     try {
-      setLoading(true)
-      const { data, error } = await lecturerService.getLecturers()
-      
+      setLoading(true);
+      const { data, error } = await lecturerService.getLecturers();
+
       if (error) {
-        setError(error.message)
-        return
+        setError(error.message);
+        return;
       }
 
       if (data) {
@@ -70,119 +99,130 @@ export default function AdminLecturers() {
           students: 0, // Will be calculated from enrollments
           status: lecturer.status,
           joinDate: lecturer.hire_date,
-          avatar: lecturer.profile.avatar_url || "/placeholder.svg?height=40&width=40",
-        }))
-        setLecturersData(transformedLecturers)
-        
+          avatar:
+            lecturer.profile.avatar_url ||
+            "/placeholder.svg?height=40&width=40",
+        }));
+        setLecturersData(transformedLecturers);
+
         // Extract unique departments
-        const uniqueDepartments = [...new Set(data.map(lecturer => lecturer.faculty.name))]
-        setDepartments(uniqueDepartments)
+        const uniqueDepartments = [
+          ...new Set(data.map((lecturer) => lecturer.faculty.name)),
+        ];
+        setDepartments(uniqueDepartments);
       }
     } catch (err) {
-      setError("Failed to fetch lecturers")
-      console.error("Error fetching lecturers:", err)
+      setError("Failed to fetch lecturers");
+      console.error("Error fetching lecturers:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getExperienceFromHireDate = (hireDate: string): string => {
-    const hireYear = new Date(hireDate).getFullYear()
-    const currentYear = new Date().getFullYear()
-    const years = currentYear - hireYear
-    return `${years} years`
-  }
+    const hireYear = new Date(hireDate).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const years = currentYear - hireYear;
+    return `${years} years`;
+  };
 
   const filteredLecturers = lecturersData.filter((lecturer) => {
     const matchesSearch =
       lecturer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lecturer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (lecturer.id?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
-    const matchesDepartment = selectedDepartment === "All" || lecturer.department === selectedDepartment
-    return matchesSearch && matchesDepartment
-  })
+      (lecturer.id?.toLowerCase() ?? "").includes(searchTerm.toLowerCase());
+    const matchesDepartment =
+      selectedDepartment === "All" ||
+      lecturer.department === selectedDepartment;
+    return matchesSearch && matchesDepartment;
+  });
 
-  const departmentStats = departments.map(dept => {
-    const count = lecturersData.filter(lecturer => lecturer.department === dept).length
-    const percentage = lecturersData.length > 0 ? Math.round((count / lecturersData.length) * 100) : 0
-    return { department: dept, count, percentage }
-  })
+  const departmentStats = departments.map((dept) => {
+    const count = lecturersData.filter(
+      (lecturer) => lecturer.department === dept,
+    ).length;
+    const percentage =
+      lecturersData.length > 0
+        ? Math.round((count / lecturersData.length) * 100)
+        : 0;
+    return { department: dept, count, percentage };
+  });
 
   const handleAddLecturer = () => {
-    setSelectedLecturer(null)
-    setModalMode("create")
-    setIsLecturerModalOpen(true)
-  }
+    setSelectedLecturer(null);
+    setModalMode("create");
+    setIsLecturerModalOpen(true);
+  };
 
   const handleEditLecturer = (lecturer: Lecturer) => {
-    setSelectedLecturer(lecturer)
-    setModalMode("edit")
-    setIsLecturerModalOpen(true)
-  }
+    setSelectedLecturer(lecturer);
+    setModalMode("edit");
+    setIsLecturerModalOpen(true);
+  };
 
   const handleDeleteLecturer = (lecturer: Lecturer) => {
-    setSelectedLecturer(lecturer)
-    setIsDeleteModalOpen(true)
-  }
+    setSelectedLecturer(lecturer);
+    setIsDeleteModalOpen(true);
+  };
 
   const handleSaveLecturer = async (lecturerData: Lecturer) => {
     try {
-      setIsSubmitting(true)
-      
+      setIsSubmitting(true);
+
       if (modalMode === "create") {
         // For now, we'll show a success message since creating a lecturer requires creating a profile first
         // In a real implementation, you'd need to create both profile and lecturer records
         toast({
           title: "Lecturer Added",
           description: `${lecturerData.name} has been successfully added.`,
-        })
+        });
       } else {
         // For editing, we'd update the lecturer record
         // This would need to be implemented with proper user update
         toast({
           title: "Lecturer Updated",
           description: `${lecturerData.name} has been successfully updated.`,
-        })
+        });
       }
-      
-      setIsLecturerModalOpen(false)
-      fetchLecturers() // Refresh the data
+
+      setIsLecturerModalOpen(false);
+      fetchLecturers(); // Refresh the data
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to save lecturer data.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleConfirmDelete = async () => {
     if (selectedLecturer) {
       try {
-        setIsSubmitting(true)
-        
+        setIsSubmitting(true);
+
         // For now, we'll show a success message since deleting a lecturer requires deleting the profile first
         // In a real implementation, you'd need to delete both lecturer and profile records
         toast({
           title: "Lecturer Deleted",
           description: `${selectedLecturer.name} has been removed from the system.`,
-        })
-        
-        setIsDeleteModalOpen(false)
-        fetchLecturers() // Refresh the data
+        });
+
+        setIsDeleteModalOpen(false);
+        fetchLecturers(); // Refresh the data
       } catch (error) {
         toast({
           title: "Error",
           description: "Failed to delete lecturer.",
           variant: "destructive",
-        })
+        });
       } finally {
-        setIsSubmitting(false)
+        setIsSubmitting(false);
       }
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -192,7 +232,7 @@ export default function AdminLecturers() {
           <span>Loading lecturers...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -203,7 +243,7 @@ export default function AdminLecturers() {
           <Button onClick={fetchLecturers}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -211,15 +251,22 @@ export default function AdminLecturers() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Lecturer Management</h1>
-          <p className="text-gray-600">Manage faculty members, their courses, and academic responsibilities</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Lecturer Management
+          </h1>
+          <p className="text-gray-600">
+            Manage faculty members, their courses, and academic responsibilities
+          </p>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="outline" className="border-blue-200 hover:bg-blue-50">
+          <Button
+            variant="outline"
+            className="border-blue-200 hover:bg-blue-50"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button 
+          <Button
             onClick={handleAddLecturer}
             className="bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white"
             disabled={isSubmitting}
@@ -239,7 +286,9 @@ export default function AdminLecturers() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{lecturersData.length}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {lecturersData.length}
+                </div>
                 <div className="text-sm text-gray-600">Total Lecturers</div>
               </div>
             </div>
@@ -254,7 +303,7 @@ export default function AdminLecturers() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {lecturersData.filter(l => l.status === 'active').length}
+                  {lecturersData.filter((l) => l.status === "active").length}
                 </div>
                 <div className="text-sm text-gray-600">Active Lecturers</div>
               </div>
@@ -270,7 +319,11 @@ export default function AdminLecturers() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {lecturersData.filter(l => l.position.includes('Professor')).length}
+                  {
+                    lecturersData.filter((l) =>
+                      l.position.includes("Professor"),
+                    ).length
+                  }
                 </div>
                 <div className="text-sm text-gray-600">Professors</div>
               </div>
@@ -286,7 +339,16 @@ export default function AdminLecturers() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {lecturersData.filter(l => l.experience.includes('5') || l.experience.includes('6') || l.experience.includes('7') || l.experience.includes('8') || l.experience.includes('9')).length}
+                  {
+                    lecturersData.filter(
+                      (l) =>
+                        l.experience.includes("5") ||
+                        l.experience.includes("6") ||
+                        l.experience.includes("7") ||
+                        l.experience.includes("8") ||
+                        l.experience.includes("9"),
+                    ).length
+                  }
                 </div>
                 <div className="text-sm text-gray-600">5+ Years Experience</div>
               </div>
@@ -328,7 +390,8 @@ export default function AdminLecturers() {
             Lecturer Records
           </CardTitle>
           <CardDescription>
-            Showing {filteredLecturers.length} of {lecturersData.length} lecturers
+            Showing {filteredLecturers.length} of {lecturersData.length}{" "}
+            lecturers
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -356,43 +419,64 @@ export default function AdminLecturers() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={lecturer.avatar} alt={lecturer.name} />
+                          <AvatarImage
+                            src={lecturer.avatar}
+                            alt={lecturer.name}
+                          />
                           <AvatarFallback className="bg-purple-100 text-purple-600">
-                            {lecturer.name.split(" ").map((n: string) => n[0]).join("")}
+                            {lecturer.name
+                              .split(" ")
+                              .map((n: string) => n[0])
+                              .join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-900">{lecturer.name}</div>
-                          <div className="text-sm text-gray-500">ID: {lecturer.id}</div>
+                          <div className="font-medium text-gray-900">
+                            {lecturer.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ID: {lecturer.id}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="text-sm text-gray-900">{lecturer.email}</div>
-                        <div className="text-sm text-gray-500">{lecturer.phone}</div>
+                        <div className="text-sm text-gray-900">
+                          {lecturer.email}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {lecturer.phone}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="border-purple-200 text-purple-700">
+                      <Badge
+                        variant="outline"
+                        className="border-purple-200 text-purple-700"
+                      >
                         {lecturer.department}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium text-gray-900">{lecturer.position}</div>
+                      <div className="font-medium text-gray-900">
+                        {lecturer.position}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">{lecturer.experience}</Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={lecturer.status === "active" ? "default" : "secondary"}
+                        variant={
+                          lecturer.status === "active" ? "default" : "secondary"
+                        }
                         className={
                           lecturer.status === "active"
                             ? "bg-green-100 text-green-800"
                             : lecturer.status === "on_leave"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
                         }
                       >
                         {lecturer.status}
@@ -408,7 +492,9 @@ export default function AdminLecturers() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEditLecturer(lecturer)}>
+                          <DropdownMenuItem
+                            onClick={() => handleEditLecturer(lecturer)}
+                          >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
@@ -417,7 +503,7 @@ export default function AdminLecturers() {
                             Send Email
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => handleDeleteLecturer(lecturer)}
                             className="text-red-600"
                           >
@@ -450,7 +536,9 @@ export default function AdminLecturers() {
         onConfirm={handleConfirmDelete}
         title="Delete Lecturer"
         description={`Are you sure you want to delete ${selectedLecturer?.name}? This action cannot be undone.`}
-        isLoading={isSubmitting} itemName={""}      />
+        isLoading={isSubmitting}
+        itemName={""}
+      />
     </div>
-  )
+  );
 }

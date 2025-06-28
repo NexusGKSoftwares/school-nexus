@@ -1,14 +1,40 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Users, Search, Filter, Download, Plus, Edit, Trash2, Eye, Mail, Calendar, GraduationCap, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  Users,
+  Search,
+  Filter,
+  Download,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  Mail,
+  Calendar,
+  GraduationCap,
+  Loader2,
+} from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,58 +42,58 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useToast } from "@/hooks/use-toast"
-import { studentService, facultyService } from "@/lib/dataService"
-import type { Student as StudentType } from "@/lib/dataService"
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import { studentService, facultyService } from "@/lib/dataService";
+import type { Student as StudentType } from "@/lib/dataService";
 
 // Import modals
-import StudentModal from "@/components/modals/StudentModal"
-import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal"
+import StudentModal from "@/components/modals/StudentModal";
+import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal";
 
 export interface Student {
-  id: string
-  name: string
-  email: string
-  phone: string
-  department: string
-  year: string
-  gpa: number
-  status: string
-  enrollmentDate: string
-  avatar?: string
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  department: string;
+  year: string;
+  gpa: number;
+  status: string;
+  enrollmentDate: string;
+  avatar?: string;
 }
 
 export default function AdminStudents() {
-  const [studentsData, setStudentsData] = useState<Student[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedDepartment, setSelectedDepartment] = useState("All")
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [departments, setDepartments] = useState<string[]>([])
+  const [studentsData, setStudentsData] = useState<Student[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [departments, setDepartments] = useState<string[]>([]);
 
   // Modal states
-  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchStudents()
-    fetchDepartments()
-  }, [])
+    fetchStudents();
+    fetchDepartments();
+  }, []);
 
   const fetchStudents = async () => {
     try {
-      setLoading(true)
-      const { data, error } = await studentService.getStudents()
-      
+      setLoading(true);
+      const { data, error } = await studentService.getStudents();
+
       if (error) {
-        setError(error.message)
-        return
+        setError(error.message);
+        return;
       }
 
       if (data) {
@@ -81,131 +107,138 @@ export default function AdminStudents() {
           gpa: 3.5, // Placeholder since we don't have GPA in our schema
           status: student.status,
           enrollmentDate: student.enrollment_date,
-          avatar: student.profile.avatar_url || "/placeholder.svg?height=40&width=40",
-        }))
-        setStudentsData(transformedStudents)
+          avatar:
+            student.profile.avatar_url || "/placeholder.svg?height=40&width=40",
+        }));
+        setStudentsData(transformedStudents);
       }
     } catch (err) {
-      setError("Failed to fetch students")
-      console.error("Error fetching students:", err)
+      setError("Failed to fetch students");
+      console.error("Error fetching students:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchDepartments = async () => {
     try {
-      const { data, error } = await facultyService.getFaculties()
+      const { data, error } = await facultyService.getFaculties();
       if (data) {
-        setDepartments(data.map(faculty => faculty.name))
+        setDepartments(data.map((faculty) => faculty.name));
       }
     } catch (err) {
-      console.error("Error fetching departments:", err)
+      console.error("Error fetching departments:", err);
     }
-  }
+  };
 
   const getYearFromEnrollmentDate = (enrollmentDate: string): string => {
-    const year = new Date(enrollmentDate).getFullYear()
-    const currentYear = new Date().getFullYear()
-    const yearDiff = currentYear - year + 1
-    
-    if (yearDiff === 1) return "1st Year"
-    if (yearDiff === 2) return "2nd Year"
-    if (yearDiff === 3) return "3rd Year"
-    if (yearDiff === 4) return "4th Year"
-    return `${yearDiff}th Year`
-  }
+    const year = new Date(enrollmentDate).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const yearDiff = currentYear - year + 1;
+
+    if (yearDiff === 1) return "1st Year";
+    if (yearDiff === 2) return "2nd Year";
+    if (yearDiff === 3) return "3rd Year";
+    if (yearDiff === 4) return "4th Year";
+    return `${yearDiff}th Year`;
+  };
 
   const filteredStudents = studentsData.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.id.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesDepartment = selectedDepartment === "All" || student.department === selectedDepartment
-    return matchesSearch && matchesDepartment
-  })
+      student.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDepartment =
+      selectedDepartment === "All" || student.department === selectedDepartment;
+    return matchesSearch && matchesDepartment;
+  });
 
-  const departmentStats = departments.map(dept => {
-    const count = studentsData.filter(student => student.department === dept).length
-    const percentage = studentsData.length > 0 ? Math.round((count / studentsData.length) * 100) : 0
-    return { department: dept, count, percentage }
-  })
+  const departmentStats = departments.map((dept) => {
+    const count = studentsData.filter(
+      (student) => student.department === dept,
+    ).length;
+    const percentage =
+      studentsData.length > 0
+        ? Math.round((count / studentsData.length) * 100)
+        : 0;
+    return { department: dept, count, percentage };
+  });
 
   const handleAddStudent = () => {
-    setSelectedStudent(null)
-    setModalMode("create")
-    setIsStudentModalOpen(true)
-  }
+    setSelectedStudent(null);
+    setModalMode("create");
+    setIsStudentModalOpen(true);
+  };
 
   const handleEditStudent = (student: Student) => {
-    setSelectedStudent(student)
-    setModalMode("edit")
-    setIsStudentModalOpen(true)
-  }
+    setSelectedStudent(student);
+    setModalMode("edit");
+    setIsStudentModalOpen(true);
+  };
 
   const handleDeleteStudent = (student: Student) => {
-    setSelectedStudent(student)
-    setIsDeleteModalOpen(true)
-  }
+    setSelectedStudent(student);
+    setIsDeleteModalOpen(true);
+  };
 
   const handleSaveStudent = async (studentData: Student) => {
     try {
-      setIsSubmitting(true)
-      
+      setIsSubmitting(true);
+
       if (modalMode === "create") {
         // For now, we'll show a success message since creating a student requires creating a profile first
         // In a real implementation, you'd need to create both profile and student records
         toast({
           title: "Student Added",
           description: `${studentData.name} has been successfully added.`,
-        })
+        });
       } else {
         // For editing, we'd update the student record
         // This would need to be implemented with proper user update
         toast({
           title: "Student Updated",
           description: `${studentData.name} has been successfully updated.`,
-        })
+        });
       }
-      
-      setIsStudentModalOpen(false)
-      fetchStudents() // Refresh the data
+
+      setIsStudentModalOpen(false);
+      fetchStudents(); // Refresh the data
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to save student data.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleConfirmDelete = async () => {
     if (selectedStudent) {
       try {
-        setIsSubmitting(true)
-        
+        setIsSubmitting(true);
+
         // For now, we'll show a success message since deleting a student requires deleting the profile first
         // In a real implementation, you'd need to delete both student and profile records
         toast({
           title: "Student Deleted",
           description: `${selectedStudent.name} has been removed from the system.`,
-        })
-        
-        setIsDeleteModalOpen(false)
-        fetchStudents() // Refresh the data
+        });
+
+        setIsDeleteModalOpen(false);
+        fetchStudents(); // Refresh the data
       } catch (error) {
         toast({
           title: "Error",
           description: "Failed to delete student.",
           variant: "destructive",
-        })
+        });
       } finally {
-        setIsSubmitting(false)
+        setIsSubmitting(false);
       }
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -215,7 +248,7 @@ export default function AdminStudents() {
           <span>Loading students...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -226,7 +259,7 @@ export default function AdminStudents() {
           <Button onClick={fetchStudents}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -235,9 +268,11 @@ export default function AdminStudents() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Students</h1>
-          <p className="text-gray-600">Manage student information and records</p>
+          <p className="text-gray-600">
+            Manage student information and records
+          </p>
         </div>
-        <Button 
+        <Button
           onClick={handleAddStudent}
           className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
           disabled={isSubmitting}
@@ -256,7 +291,9 @@ export default function AdminStudents() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{studentsData.length}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {studentsData.length}
+                </div>
                 <div className="text-sm text-gray-600">Total Students</div>
               </div>
             </div>
@@ -271,7 +308,7 @@ export default function AdminStudents() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {studentsData.filter(s => s.status === 'active').length}
+                  {studentsData.filter((s) => s.status === "active").length}
                 </div>
                 <div className="text-sm text-gray-600">Active Students</div>
               </div>
@@ -287,7 +324,7 @@ export default function AdminStudents() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {studentsData.filter(s => s.year === '1st Year').length}
+                  {studentsData.filter((s) => s.year === "1st Year").length}
                 </div>
                 <div className="text-sm text-gray-600">First Year</div>
               </div>
@@ -303,7 +340,7 @@ export default function AdminStudents() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {studentsData.filter(s => s.status === 'graduated').length}
+                  {studentsData.filter((s) => s.status === "graduated").length}
                 </div>
                 <div className="text-sm text-gray-600">Graduated</div>
               </div>
@@ -377,25 +414,42 @@ export default function AdminStudents() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={student.avatar} alt={student.name} />
+                          <AvatarImage
+                            src={student.avatar}
+                            alt={student.name}
+                          />
                           <AvatarFallback className="bg-blue-100 text-blue-600">
-                            {student.name.split(" ").map((n) => n[0]).join("")}
+                            {student.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-900">{student.name}</div>
-                          <div className="text-sm text-gray-500">ID: {student.id}</div>
+                          <div className="font-medium text-gray-900">
+                            {student.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ID: {student.id}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="text-sm text-gray-900">{student.email}</div>
-                        <div className="text-sm text-gray-500">{student.phone}</div>
+                        <div className="text-sm text-gray-900">
+                          {student.email}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {student.phone}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="border-blue-200 text-blue-700">
+                      <Badge
+                        variant="outline"
+                        className="border-blue-200 text-blue-700"
+                      >
                         {student.department}
                       </Badge>
                     </TableCell>
@@ -404,20 +458,24 @@ export default function AdminStudents() {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={student.status === "active" ? "default" : "secondary"}
+                        variant={
+                          student.status === "active" ? "default" : "secondary"
+                        }
                         className={
                           student.status === "active"
                             ? "bg-green-100 text-green-800"
                             : student.status === "graduated"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-red-100 text-red-800"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-red-100 text-red-800"
                         }
                       >
                         {student.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium text-gray-900">{student.gpa.toFixed(1)}</div>
+                      <div className="font-medium text-gray-900">
+                        {student.gpa.toFixed(1)}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -429,7 +487,9 @@ export default function AdminStudents() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEditStudent(student)}>
+                          <DropdownMenuItem
+                            onClick={() => handleEditStudent(student)}
+                          >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
@@ -438,7 +498,7 @@ export default function AdminStudents() {
                             Send Email
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => handleDeleteStudent(student)}
                             className="text-red-600"
                           >
@@ -471,7 +531,9 @@ export default function AdminStudents() {
         onConfirm={handleConfirmDelete}
         title="Delete Student"
         description={`Are you sure you want to delete ${selectedStudent?.name}? This action cannot be undone.`}
-        isLoading={isSubmitting} itemName={""}      />
+        isLoading={isSubmitting}
+        itemName={""}
+      />
     </div>
-  )
+  );
 }

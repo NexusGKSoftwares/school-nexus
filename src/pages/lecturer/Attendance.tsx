@@ -1,12 +1,35 @@
-"use client"
+"use client";
 
-import { UserCheck, Users, Download, Filter, Search, Check, X, Clock, Loader2 } from "lucide-react"
-import { useState, useEffect } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  UserCheck,
+  Users,
+  Download,
+  Filter,
+  Search,
+  Check,
+  X,
+  Clock,
+  Loader2,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,173 +37,193 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { attendanceService, courseService } from "@/lib/dataService"
-import { useAuth } from "@/contexts/AuthContext"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/dropdown-menu";
+import { attendanceService, courseService } from "@/lib/dataService";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface Attendance {
-  id: string
-  student_id: string
-  course_id: string
-  date: string
-  status: string
-  created_at: string
+  id: string;
+  student_id: string;
+  course_id: string;
+  date: string;
+  status: string;
+  created_at: string;
   student?: {
-    first_name: string
-    last_name: string
+    first_name: string;
+    last_name: string;
     profile?: {
-      email: string
-    }
-  }
+      email: string;
+    };
+  };
   course?: {
-    code: string
-    name: string
-  }
+    code: string;
+    name: string;
+  };
 }
 
 interface CourseStats {
-  course: string
-  present: number
-  absent: number
-  late: number
-  total: number
+  course: string;
+  present: number;
+  absent: number;
+  late: number;
+  total: number;
 }
 
 export default function LecturerAttendance() {
-  const { user } = useAuth()
-  const { toast } = useToast()
-  const [attendance, setAttendance] = useState<Attendance[]>([])
-  const [courses, setCourses] = useState<any[]>([])
-  const [courseStats, setCourseStats] = useState<CourseStats[]>([])
-  const [selectedCourse, setSelectedCourse] = useState("All Courses")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [courseStats, setCourseStats] = useState<CourseStats[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState("All Courses");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
-      fetchData()
+      fetchData();
     }
-  }, [user])
+  }, [user]);
 
   const fetchData = async () => {
-    if (!user) return
+    if (!user) return;
 
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       // Fetch attendance for the logged-in lecturer
-      const { data: attendanceData, error: attendanceError } = await attendanceService.getAttendanceByLecturer(user.id)
-      
+      const { data: attendanceData, error: attendanceError } =
+        await attendanceService.getAttendanceByLecturer(user.id);
+
       if (attendanceError) {
-        setError(attendanceError.message)
-        return
+        setError(attendanceError.message);
+        return;
       }
 
       // Fetch courses for the lecturer
-      const { data: coursesData, error: coursesError } = await courseService.getCoursesByLecturer(user.id)
-      
+      const { data: coursesData, error: coursesError } =
+        await courseService.getCoursesByLecturer(user.id);
+
       if (coursesError) {
-        setError(coursesError.message)
-        return
+        setError(coursesError.message);
+        return;
       }
 
       if (attendanceData) {
-        setAttendance(attendanceData)
+        setAttendance(attendanceData);
       }
 
       if (coursesData) {
-        setCourses(coursesData)
+        setCourses(coursesData);
 
         // Generate course statistics
-        const stats: CourseStats[] = coursesData.map(course => {
-          const courseAttendance = attendanceData?.filter(a => a.course_id === course.id) || []
-          const present = courseAttendance.filter(a => a.status === 'present').length
-          const absent = courseAttendance.filter(a => a.status === 'absent').length
-          const late = courseAttendance.filter(a => a.status === 'late').length
-          const total = course.enrolled_students || 0
+        const stats: CourseStats[] = coursesData.map((course) => {
+          const courseAttendance =
+            attendanceData?.filter((a) => a.course_id === course.id) || [];
+          const present = courseAttendance.filter(
+            (a) => a.status === "present",
+          ).length;
+          const absent = courseAttendance.filter(
+            (a) => a.status === "absent",
+          ).length;
+          const late = courseAttendance.filter(
+            (a) => a.status === "late",
+          ).length;
+          const total = course.enrolled_students || 0;
 
           return {
             course: course.code,
             present,
             absent,
             late,
-            total
-          }
-        })
-        setCourseStats(stats)
+            total,
+          };
+        });
+        setCourseStats(stats);
       }
     } catch (err) {
-      setError("Failed to fetch attendance data")
-      console.error("Error fetching attendance data:", err)
+      setError("Failed to fetch attendance data");
+      console.error("Error fetching attendance data:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleUpdateAttendance = async (attendanceId: string, status: string) => {
+  const handleUpdateAttendance = async (
+    attendanceId: string,
+    status: string,
+  ) => {
     try {
-      const { error } = await attendanceService.updateAttendance(attendanceId, { status })
-      
+      const { error } = await attendanceService.updateAttendance(attendanceId, {
+        status,
+      });
+
       if (error) {
         toast({
           title: "Error",
           description: error.message,
           variant: "destructive",
-        })
-        return
+        });
+        return;
       }
 
       toast({
         title: "Success",
         description: "Attendance updated successfully",
-      })
+      });
 
       // Refresh the data
-      fetchData()
+      fetchData();
     } catch (err) {
       toast({
         title: "Error",
         description: "Failed to update attendance",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const filteredAttendance = attendance.filter((record) => {
-    const studentName = record.student ? `${record.student.first_name} ${record.student.last_name}` : 'Unknown'
-    const matchesSearch = studentName.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCourse = selectedCourse === "All Courses" || record.course?.code === selectedCourse
-    return matchesSearch && matchesCourse
-  })
+    const studentName = record.student
+      ? `${record.student.first_name} ${record.student.last_name}`
+      : "Unknown";
+    const matchesSearch = studentName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCourse =
+      selectedCourse === "All Courses" ||
+      record.course?.code === selectedCourse;
+    return matchesSearch && matchesCourse;
+  });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "present":
-        return <Check className="h-4 w-4 text-green-600" />
+        return <Check className="h-4 w-4 text-green-600" />;
       case "absent":
-        return <X className="h-4 w-4 text-red-600" />
+        return <X className="h-4 w-4 text-red-600" />;
       case "late":
-        return <Clock className="h-4 w-4 text-orange-600" />
+        return <Clock className="h-4 w-4 text-orange-600" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "present":
-        return "bg-green-500"
+        return "bg-green-500";
       case "absent":
-        return "bg-red-500"
+        return "bg-red-500";
       case "late":
-        return "bg-orange-500"
+        return "bg-orange-500";
       default:
-        return "bg-gray-500"
+        return "bg-gray-500";
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -190,7 +233,7 @@ export default function LecturerAttendance() {
           <span>Loading attendance data...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -201,25 +244,42 @@ export default function LecturerAttendance() {
           <Button onClick={fetchData}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
-  const totalPresent = courseStats.reduce((sum, course) => sum + course.present, 0)
-  const totalAbsent = courseStats.reduce((sum, course) => sum + course.absent, 0)
-  const totalLate = courseStats.reduce((sum, course) => sum + course.late, 0)
-  const totalStudents = courseStats.reduce((sum, course) => sum + course.total, 0)
-  const attendanceRate = totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0
+  const totalPresent = courseStats.reduce(
+    (sum, course) => sum + course.present,
+    0,
+  );
+  const totalAbsent = courseStats.reduce(
+    (sum, course) => sum + course.absent,
+    0,
+  );
+  const totalLate = courseStats.reduce((sum, course) => sum + course.late, 0);
+  const totalStudents = courseStats.reduce(
+    (sum, course) => sum + course.total,
+    0,
+  );
+  const attendanceRate =
+    totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0;
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Attendance Management</h1>
-          <p className="text-gray-600">Track and manage student attendance for your courses</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Attendance Management
+          </h1>
+          <p className="text-gray-600">
+            Track and manage student attendance for your courses
+          </p>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="outline" className="border-blue-200 hover:bg-blue-50">
+          <Button
+            variant="outline"
+            className="border-blue-200 hover:bg-blue-50"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>
@@ -239,7 +299,9 @@ export default function LecturerAttendance() {
                 <Check className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{totalPresent}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {totalPresent}
+                </div>
                 <div className="text-sm text-gray-600">Present Today</div>
               </div>
             </div>
@@ -253,7 +315,9 @@ export default function LecturerAttendance() {
                 <X className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{totalAbsent}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {totalAbsent}
+                </div>
                 <div className="text-sm text-gray-600">Absent Today</div>
               </div>
             </div>
@@ -267,7 +331,9 @@ export default function LecturerAttendance() {
                 <Clock className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{totalLate}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {totalLate}
+                </div>
                 <div className="text-sm text-gray-600">Late Today</div>
               </div>
             </div>
@@ -281,7 +347,9 @@ export default function LecturerAttendance() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{attendanceRate}%</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {attendanceRate}%
+                </div>
                 <div className="text-sm text-gray-600">Attendance Rate</div>
               </div>
             </div>
@@ -303,25 +371,38 @@ export default function LecturerAttendance() {
             {courseStats.length === 0 ? (
               <div className="text-center py-4">
                 <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-500 text-sm">No course data available</p>
+                <p className="text-gray-500 text-sm">
+                  No course data available
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {courseStats.map((stat, index) => (
-                  <div key={index} className="p-3 rounded-lg border border-gray-200">
+                  <div
+                    key={index}
+                    className="p-3 rounded-lg border border-gray-200"
+                  >
                     <div className="space-y-2">
-                      <h4 className="font-medium text-gray-900 text-sm">{stat.course}</h4>
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {stat.course}
+                      </h4>
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center">
-                          <div className="font-semibold text-green-600">{stat.present}</div>
+                          <div className="font-semibold text-green-600">
+                            {stat.present}
+                          </div>
                           <div className="text-gray-500">Present</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-semibold text-red-600">{stat.absent}</div>
+                          <div className="font-semibold text-red-600">
+                            {stat.absent}
+                          </div>
                           <div className="text-gray-500">Absent</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-semibold text-orange-600">{stat.late}</div>
+                          <div className="font-semibold text-orange-600">
+                            {stat.late}
+                          </div>
                           <div className="text-gray-500">Late</div>
                         </div>
                       </div>
@@ -359,7 +440,10 @@ export default function LecturerAttendance() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
                       <Filter className="h-4 w-4" />
                       {selectedCourse}
                     </Button>
@@ -367,11 +451,16 @@ export default function LecturerAttendance() {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Filter by Course</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setSelectedCourse("All Courses")}>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedCourse("All Courses")}
+                    >
                       All Courses
                     </DropdownMenuItem>
                     {courses.map((course) => (
-                      <DropdownMenuItem key={course.id} onClick={() => setSelectedCourse(course.code)}>
+                      <DropdownMenuItem
+                        key={course.id}
+                        onClick={() => setSelectedCourse(course.code)}
+                      >
                         {course.code}
                       </DropdownMenuItem>
                     ))}
@@ -403,13 +492,21 @@ export default function LecturerAttendance() {
                       <TableCell>
                         <div>
                           <div className="font-medium text-gray-900">
-                            {record.student ? `${record.student.first_name} ${record.student.last_name}` : 'Unknown Student'}
+                            {record.student
+                              ? `${record.student.first_name} ${record.student.last_name}`
+                              : "Unknown Student"}
                           </div>
-                          <div className="text-sm text-gray-600">{record.student?.profile?.email}</div>
+                          <div className="text-sm text-gray-600">
+                            {record.student?.profile?.email}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{record.course?.code || 'Unknown'}</TableCell>
-                      <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
+                      <TableCell className="font-medium">
+                        {record.course?.code || "Unknown"}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(record.date).toLocaleDateString()}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {getStatusIcon(record.status)}
@@ -420,27 +517,33 @@ export default function LecturerAttendance() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
+                          <Button
+                            size="sm"
+                            variant="outline"
                             className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
-                            onClick={() => handleUpdateAttendance(record.id, 'present')}
+                            onClick={() =>
+                              handleUpdateAttendance(record.id, "present")
+                            }
                           >
                             <Check className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
+                          <Button
+                            size="sm"
+                            variant="outline"
                             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                            onClick={() => handleUpdateAttendance(record.id, 'absent')}
+                            onClick={() =>
+                              handleUpdateAttendance(record.id, "absent")
+                            }
                           >
                             <X className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
+                          <Button
+                            size="sm"
+                            variant="outline"
                             className="h-8 w-8 p-0 text-orange-600 hover:text-orange-700"
-                            onClick={() => handleUpdateAttendance(record.id, 'late')}
+                            onClick={() =>
+                              handleUpdateAttendance(record.id, "late")
+                            }
                           >
                             <Clock className="h-4 w-4" />
                           </Button>
@@ -455,5 +558,5 @@ export default function LecturerAttendance() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import {
   Users,
   GraduationCap,
@@ -13,63 +13,90 @@ import {
   CheckCircle,
   Clock,
   Activity,
-} from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useAuth } from "../../contexts/AuthContext"
-import { studentService, lecturerService, courseService, paymentService, announcementService } from "../../lib/dataService"
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  studentService,
+  lecturerService,
+  courseService,
+  paymentService,
+  announcementService,
+} from "../../lib/dataService";
 
 interface DashboardStats {
-  totalStudents: number
-  activeLecturers: number
-  totalCourses: number
-  outstandingFees: number
-  totalAnnouncements: number
+  totalStudents: number;
+  activeLecturers: number;
+  totalCourses: number;
+  outstandingFees: number;
+  totalAnnouncements: number;
 }
 
 interface RecentActivity {
-  id: string
-  type: string
-  user: string
-  action: string
-  time: string
-  status: string
+  id: string;
+  type: string;
+  user: string;
+  action: string;
+  time: string;
+  status: string;
 }
 
 export default function AdminDashboard() {
-  const { profile } = useAuth()
+  const { profile } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
     activeLecturers: 0,
     totalCourses: 0,
     outstandingFees: 0,
     totalAnnouncements: 0,
-  })
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
-  const [loading, setLoading] = useState(true)
+  });
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         // Fetch all data in parallel
-        const [studentsRes, lecturersRes, coursesRes, paymentsRes, announcementsRes] = await Promise.all([
+        const [
+          studentsRes,
+          lecturersRes,
+          coursesRes,
+          paymentsRes,
+          announcementsRes,
+        ] = await Promise.all([
           studentService.getStudents(),
           lecturerService.getLecturers(),
           courseService.getCourses(),
           paymentService.getPayments(),
           announcementService.getAnnouncements(),
-        ])
+        ]);
 
         // Calculate stats
-        const totalStudents = studentsRes.data?.length || 0
-        const activeLecturers = lecturersRes.data?.filter(l => l.status === 'active').length || 0
-        const totalCourses = coursesRes.data?.length || 0
-        const outstandingFees = paymentsRes.data
-          ?.filter(p => p.status === 'pending')
-          .reduce((sum, p) => sum + Number(p.amount), 0) || 0
-        const totalAnnouncements = announcementsRes.data?.length || 0
+        const totalStudents = studentsRes.data?.length || 0;
+        const activeLecturers =
+          lecturersRes.data?.filter((l) => l.status === "active").length || 0;
+        const totalCourses = coursesRes.data?.length || 0;
+        const outstandingFees =
+          paymentsRes.data
+            ?.filter((p) => p.status === "pending")
+            .reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+        const totalAnnouncements = announcementsRes.data?.length || 0;
 
         setStats({
           totalStudents,
@@ -77,84 +104,84 @@ export default function AdminDashboard() {
           totalCourses,
           outstandingFees,
           totalAnnouncements,
-        })
+        });
 
         // Generate recent activity from the data
-        const activity: RecentActivity[] = []
-        
+        const activity: RecentActivity[] = [];
+
         // Add recent student registrations
-        studentsRes.data?.slice(0, 3).forEach(student => {
+        studentsRes.data?.slice(0, 3).forEach((student) => {
           activity.push({
             id: student.id,
-            type: 'registration',
+            type: "registration",
             user: student.profile.full_name,
-            action: 'New student registration',
+            action: "New student registration",
             time: new Date(student.created_at).toLocaleDateString(),
-            status: 'completed',
-          })
-        })
+            status: "completed",
+          });
+        });
 
         // Add recent payments
-        paymentsRes.data?.slice(0, 2).forEach(payment => {
+        paymentsRes.data?.slice(0, 2).forEach((payment) => {
           activity.push({
             id: payment.id,
-            type: 'payment',
+            type: "payment",
             user: payment.student.profile.full_name,
-            action: `Payment ${payment.status === 'completed' ? 'received' : 'pending'}`,
+            action: `Payment ${payment.status === "completed" ? "received" : "pending"}`,
             time: new Date(payment.created_at).toLocaleDateString(),
             status: payment.status,
-          })
-        })
+          });
+        });
 
         // Add recent announcements
-        announcementsRes.data?.slice(0, 2).forEach(announcement => {
+        announcementsRes.data?.slice(0, 2).forEach((announcement) => {
           activity.push({
             id: announcement.id,
-            type: 'announcement',
+            type: "announcement",
             user: announcement.author.full_name,
-            action: 'Created announcement',
+            action: "Created announcement",
             time: new Date(announcement.created_at).toLocaleDateString(),
-            status: announcement.is_published ? 'published' : 'draft',
-          })
-        })
+            status: announcement.is_published ? "published" : "draft",
+          });
+        });
 
-        setRecentActivity(activity.slice(0, 5))
+        setRecentActivity(activity.slice(0, 5));
       } catch (error) {
-        console.error('Error fetching dashboard data:', error)
+        console.error("Error fetching dashboard data:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchDashboardData()
-  }, [])
+    fetchDashboardData();
+  }, []);
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
+  });
 
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "registration":
-        return <UserPlus className="h-4 w-4 text-blue-600" />
+        return <UserPlus className="h-4 w-4 text-blue-600" />;
       case "payment":
-        return <DollarSign className="h-4 w-4 text-green-600" />
+        return <DollarSign className="h-4 w-4 text-green-600" />;
       case "announcement":
-        return <FileText className="h-4 w-4 text-purple-600" />
+        return <FileText className="h-4 w-4 text-purple-600" />;
       default:
-        return <Activity className="h-4 w-4 text-gray-600" />
+        return <Activity className="h-4 w-4 text-gray-600" />;
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -163,7 +190,9 @@ export default function AdminDashboard() {
       <Card className="overflow-hidden bg-gradient-to-r from-purple-500 via-violet-600 to-indigo-600 text-white shadow-xl border-0">
         <CardContent className="p-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Welcome back, {profile?.full_name}! 👨‍💼</h1>
+            <h1 className="text-3xl font-bold">
+              Welcome back, {profile?.full_name}! 👨‍💼
+            </h1>
             <p className="text-purple-100 text-lg">System Administrator</p>
             <p className="text-purple-200">{currentDate}</p>
           </div>
@@ -179,7 +208,9 @@ export default function AdminDashboard() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{stats.totalStudents.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {stats.totalStudents.toLocaleString()}
+                </div>
                 <div className="text-sm text-gray-600">Total Students</div>
               </div>
             </div>
@@ -193,7 +224,9 @@ export default function AdminDashboard() {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{stats.activeLecturers}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {stats.activeLecturers}
+                </div>
                 <div className="text-sm text-gray-600">Active Lecturers</div>
               </div>
             </div>
@@ -207,7 +240,9 @@ export default function AdminDashboard() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">{stats.totalCourses}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {stats.totalCourses}
+                </div>
                 <div className="text-sm text-gray-600">Total Courses</div>
               </div>
             </div>
@@ -221,7 +256,9 @@ export default function AdminDashboard() {
                 <DollarSign className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-800">${stats.outstandingFees.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  ${stats.outstandingFees.toLocaleString()}
+                </div>
                 <div className="text-sm text-gray-600">Outstanding Fees</div>
               </div>
             </div>
@@ -238,22 +275,34 @@ export default function AdminDashboard() {
               <Activity className="h-5 w-5 text-blue-600" />
               Recent Activity
             </CardTitle>
-            <CardDescription>Latest system activities and updates</CardDescription>
+            <CardDescription>
+              Latest system activities and updates
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {recentActivity.length > 0 ? (
                 recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                  <div
+                    key={activity.id}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-gray-50"
+                  >
                     {getActivityIcon(activity.type)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{activity.user}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {activity.user}
+                      </p>
                       <p className="text-xs text-gray-600">{activity.action}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-500">{activity.time}</p>
                       <Badge
-                        variant={activity.status === "completed" || activity.status === "published" ? "default" : "secondary"}
+                        variant={
+                          activity.status === "completed" ||
+                          activity.status === "published"
+                            ? "default"
+                            : "secondary"
+                        }
                         className="text-xs"
                       >
                         {activity.status}
@@ -262,7 +311,9 @@ export default function AdminDashboard() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-center py-4">No recent activity</p>
+                <p className="text-gray-500 text-center py-4">
+                  No recent activity
+                </p>
               )}
             </div>
           </CardContent>
@@ -304,5 +355,5 @@ export default function AdminDashboard() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

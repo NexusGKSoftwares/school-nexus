@@ -1,25 +1,37 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff, GraduationCap, User, Shield } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, GraduationCap, User, Shield } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { supabase } from "@/lib/supabase"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabase";
 
 export default function Register() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [userType, setUserType] = useState("student")
-  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [userType, setUserType] = useState("student");
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -29,55 +41,57 @@ export default function Register() {
     studentId: "",
     department: "",
     agreeToTerms: false,
-  })
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
+  });
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     // Validate fields
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
     }
     if (!formData.agreeToTerms) {
-      setError("Please agree to the terms and conditions")
-      setIsLoading(false)
-      return
+      setError("Please agree to the terms and conditions");
+      setIsLoading(false);
+      return;
     }
 
     // Sign up with metadata
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-      options: {
-        data: {
-          full_name: `${formData.firstName} ${formData.lastName}`,
-          role: userType,
-        }
-      }
-    })
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
+      {
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            role: userType,
+          },
+        },
+      },
+    );
 
     if (signUpError) {
-      setError(signUpError.message)
-      setIsLoading(false)
-      return
+      setError(signUpError.message);
+      setIsLoading(false);
+      return;
     }
 
     // Wait for the trigger to create the profile
-    let profileId = signUpData.user?.id
+    let profileId = signUpData.user?.id;
     if (!profileId) {
-      setError("Registration failed. Please try again.")
-      setIsLoading(false)
-      return
+      setError("Registration failed. Please try again.");
+      setIsLoading(false);
+      return;
     }
 
     // Insert into students or lecturers if needed
@@ -90,11 +104,11 @@ export default function Register() {
           enrollment_date: new Date().toISOString().slice(0, 10),
           status: "active",
         },
-      ])
+      ]);
       if (studentError) {
-        setError(studentError.message)
-        setIsLoading(false)
-        return
+        setError(studentError.message);
+        setIsLoading(false);
+        return;
       }
     } else if (userType === "lecturer") {
       const { error: lecturerError } = await supabase.from("lecturers").insert([
@@ -105,18 +119,18 @@ export default function Register() {
           hire_date: new Date().toISOString().slice(0, 10),
           status: "active",
         },
-      ])
+      ]);
       if (lecturerError) {
-        setError(lecturerError.message)
-        setIsLoading(false)
-        return
+        setError(lecturerError.message);
+        setIsLoading(false);
+        return;
       }
     }
 
     // Success
-    navigate("/auth/login")
-    setIsLoading(false)
-  }
+    navigate("/auth/login");
+    setIsLoading(false);
+  };
 
   const userTypeConfig = {
     student: {
@@ -137,10 +151,10 @@ export default function Register() {
       description: "Administrative access requires approval",
       color: "from-purple-500 to-violet-600",
     },
-  }
+  };
 
-  const currentConfig = userTypeConfig[userType as keyof typeof userTypeConfig]
-  const IconComponent = currentConfig.icon
+  const currentConfig = userTypeConfig[userType as keyof typeof userTypeConfig];
+  const IconComponent = currentConfig.icon;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
@@ -150,7 +164,9 @@ export default function Register() {
             <div className="flex aspect-square size-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
               <GraduationCap className="size-6" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">AMEU Smart School</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              AMEU Smart School
+            </h1>
           </div>
           <p className="text-gray-600">Create your account to get started.</p>
         </div>
@@ -158,7 +174,9 @@ export default function Register() {
         <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className={`p-2 rounded-lg bg-gradient-to-r ${currentConfig.color} text-white`}>
+              <div
+                className={`p-2 rounded-lg bg-gradient-to-r ${currentConfig.color} text-white`}
+              >
                 <IconComponent className="h-5 w-5" />
               </div>
               <div>
@@ -178,7 +196,9 @@ export default function Register() {
 
             {error && (
               <Alert className="mb-4 border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">{error}</AlertDescription>
+                <AlertDescription className="text-red-700">
+                  {error}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -190,7 +210,9 @@ export default function Register() {
                     id="firstName"
                     placeholder="Enter first name"
                     value={formData.firstName}
-                    onChange={(e) => handleInputChange("firstName", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("firstName", e.target.value)
+                    }
                     required
                     className="border-blue-200 focus:border-blue-400"
                   />
@@ -201,7 +223,9 @@ export default function Register() {
                     id="lastName"
                     placeholder="Enter last name"
                     value={formData.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("lastName", e.target.value)
+                    }
                     required
                     className="border-blue-200 focus:border-blue-400"
                   />
@@ -228,7 +252,9 @@ export default function Register() {
                     id="studentId"
                     placeholder="Enter your student ID"
                     value={formData.studentId}
-                    onChange={(e) => handleInputChange("studentId", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("studentId", e.target.value)
+                    }
                     required
                     className="border-blue-200 focus:border-blue-400"
                   />
@@ -238,12 +264,18 @@ export default function Register() {
               {(userType === "lecturer" || userType === "admin") && (
                 <div className="space-y-2">
                   <Label htmlFor="department">Department</Label>
-                  <Select onValueChange={(value) => handleInputChange("department", value)}>
+                  <Select
+                    onValueChange={(value) =>
+                      handleInputChange("department", value)
+                    }
+                  >
                     <SelectTrigger className="border-blue-200 focus:border-blue-400">
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="computer-science">Computer Science</SelectItem>
+                      <SelectItem value="computer-science">
+                        Computer Science
+                      </SelectItem>
                       <SelectItem value="mathematics">Mathematics</SelectItem>
                       <SelectItem value="physics">Physics</SelectItem>
                       <SelectItem value="chemistry">Chemistry</SelectItem>
@@ -264,7 +296,9 @@ export default function Register() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     required
                     className="border-blue-200 focus:border-blue-400 pr-10"
                   />
@@ -292,7 +326,9 @@ export default function Register() {
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("confirmPassword", e.target.value)
+                    }
                     required
                     className="border-blue-200 focus:border-blue-400 pr-10"
                   />
@@ -316,7 +352,9 @@ export default function Register() {
                 <Checkbox
                   id="terms"
                   checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) => handleInputChange("agreeToTerms", checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    handleInputChange("agreeToTerms", checked as boolean)
+                  }
                 />
                 <Label htmlFor="terms" className="text-sm">
                   I agree to the{" "}
@@ -342,7 +380,10 @@ export default function Register() {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link to="/auth/login" className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                <Link
+                  to="/auth/login"
+                  className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                >
                   Sign in
                 </Link>
               </p>
@@ -351,11 +392,14 @@ export default function Register() {
         </Card>
 
         <div className="mt-8 text-center">
-          <Link to="/" className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+          <Link
+            to="/"
+            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+          >
             ← Back to Home
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

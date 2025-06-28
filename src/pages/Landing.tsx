@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   GraduationCap,
   Users,
@@ -25,35 +25,49 @@ import {
   Mail,
   Phone,
   MapPin,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function Landing() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState("students")
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("students");
 
   const features = [
     {
       icon: BookOpen,
       title: "Academic Automation",
-      description: "Streamline course registration, grading, and academic workflows with intelligent automation.",
+      description:
+        "Streamline course registration, grading, and academic workflows with intelligent automation.",
     },
     {
       icon: CreditCard,
       title: "Seamless Payments",
-      description: "Integrated payment processing for tuition, fees, and other school-related transactions.",
+      description:
+        "Integrated payment processing for tuition, fees, and other school-related transactions.",
     },
     {
       icon: MessageSquare,
       title: "Real-Time Communication",
-      description: "Connect students, lecturers, and administrators through instant messaging and notifications.",
+      description:
+        "Connect students, lecturers, and administrators through instant messaging and notifications.",
     },
-  ]
+  ];
 
   const roleFeatures = {
     students: {
@@ -108,7 +122,7 @@ export default function Landing() {
         "Administrative tasks",
       ],
     },
-  }
+  };
 
   const benefits = [
     {
@@ -141,7 +155,7 @@ export default function Landing() {
       title: "Multi-Role Support",
       description: "Supports students, lecturers, admins, and staff",
     },
-  ]
+  ];
 
   const faqItems = [
     {
@@ -174,7 +188,7 @@ export default function Landing() {
       answer:
         "Yes! We offer a 30-day free trial with full access to all features. No credit card required, and you can cancel anytime during the trial period.",
     },
-  ]
+  ];
 
   const pricingPlans = [
     {
@@ -227,7 +241,7 @@ export default function Landing() {
         "Training & Onboarding",
       ],
     },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -239,21 +253,35 @@ export default function Landing() {
               <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
                 <GraduationCap className="size-5" />
               </div>
-              <span className="text-xl font-bold text-gray-900">AMEU Smart School</span>
+              <span className="text-xl font-bold text-gray-900">
+                AMEU Smart School
+              </span>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a
+                href="#features"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+              >
                 Features
               </a>
-              <a href="#pricing" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a
+                href="#pricing"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+              >
                 Pricing
               </a>
-              <a href="#faq" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a
+                href="#faq"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+              >
                 FAQ
               </a>
-              <a href="#contact" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a
+                href="#contact"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+              >
                 Contact
               </a>
               <Link
@@ -266,8 +294,16 @@ export default function Landing() {
 
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
               </Button>
             </div>
           </div>
@@ -276,16 +312,28 @@ export default function Landing() {
           {isMenuOpen && (
             <div className="md:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-blue-100">
-                <a href="#features" className="block px-3 py-2 text-gray-600 hover:text-blue-600">
+                <a
+                  href="#features"
+                  className="block px-3 py-2 text-gray-600 hover:text-blue-600"
+                >
                   Features
                 </a>
-                <a href="#pricing" className="block px-3 py-2 text-gray-600 hover:text-blue-600">
+                <a
+                  href="#pricing"
+                  className="block px-3 py-2 text-gray-600 hover:text-blue-600"
+                >
                   Pricing
                 </a>
-                <a href="#faq" className="block px-3 py-2 text-gray-600 hover:text-blue-600">
+                <a
+                  href="#faq"
+                  className="block px-3 py-2 text-gray-600 hover:text-blue-600"
+                >
                   FAQ
                 </a>
-                <a href="#contact" className="block px-3 py-2 text-gray-600 hover:text-blue-600">
+                <a
+                  href="#contact"
+                  className="block px-3 py-2 text-gray-600 hover:text-blue-600"
+                >
                   Contact
                 </a>
                 <Link
@@ -306,12 +354,19 @@ export default function Landing() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="flex items-center gap-2 mb-6">
-                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">🎓 Trusted by 50+ Universities</Badge>
+                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+                  🎓 Trusted by 50+ Universities
+                </Badge>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
-                  <span className="text-sm text-gray-600 ml-1">4.9/5 (2,500+ reviews)</span>
+                  <span className="text-sm text-gray-600 ml-1">
+                    4.9/5 (2,500+ reviews)
+                  </span>
                 </div>
               </div>
 
@@ -323,8 +378,9 @@ export default function Landing() {
               </h1>
 
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Streamline academic, financial, and administrative operations — all in one powerful platform designed
-                specifically for African educational institutions.
+                Streamline academic, financial, and administrative operations —
+                all in one powerful platform designed specifically for African
+                educational institutions.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -336,7 +392,11 @@ export default function Landing() {
                   Request Demo
                 </Button>
                 <Link to="/auth/login">
-                  <Button size="lg" variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                  >
                     Login to Portal
                     <ArrowRight className="h-5 w-5 ml-2" />
                   </Button>
@@ -378,15 +438,21 @@ export default function Landing() {
       <section id="features" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Everything Your Institution Needs</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Everything Your Institution Needs
+            </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our comprehensive platform brings together all aspects of school management into one seamless experience.
+              Our comprehensive platform brings together all aspects of school
+              management into one seamless experience.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="border-blue-100 hover:border-blue-300 transition-colors hover:shadow-lg">
+              <Card
+                key={index}
+                className="border-blue-100 hover:border-blue-300 transition-colors hover:shadow-lg"
+              >
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
@@ -410,16 +476,27 @@ export default function Landing() {
       <section className="py-16 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Designed for Every Role</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Designed for Every Role
+            </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Tailored experiences for students, lecturers, administrators, and support staff.
+              Tailored experiences for students, lecturers, administrators, and
+              support staff.
             </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-4 mb-8">
               {Object.entries(roleFeatures).map(([key, role]) => (
-                <TabsTrigger key={key} value={key} className="flex items-center gap-2">
+                <TabsTrigger
+                  key={key}
+                  value={key}
+                  className="flex items-center gap-2"
+                >
                   <role.icon className="h-4 w-4" />
                   {role.title}
                 </TabsTrigger>
@@ -431,13 +508,16 @@ export default function Landing() {
                 <Card className="border-blue-100">
                   <CardHeader>
                     <div className="flex items-center gap-4 mb-4">
-                      <div className={`p-4 rounded-xl bg-gradient-to-br ${role.color} text-white`}>
+                      <div
+                        className={`p-4 rounded-xl bg-gradient-to-br ${role.color} text-white`}
+                      >
                         <role.icon className="h-8 w-8" />
                       </div>
                       <div>
                         <CardTitle className="text-2xl">{role.title}</CardTitle>
                         <CardDescription className="text-lg">
-                          Key features and capabilities for {role.title.toLowerCase()}
+                          Key features and capabilities for{" "}
+                          {role.title.toLowerCase()}
                         </CardDescription>
                       </div>
                     </div>
@@ -463,18 +543,40 @@ export default function Landing() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">See the System in Action</h2>
-            <p className="text-xl text-gray-600">Explore our intuitive dashboards and user interfaces</p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              See the System in Action
+            </h2>
+            <p className="text-xl text-gray-600">
+              Explore our intuitive dashboards and user interfaces
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { title: "Student Dashboard", description: "Clean, intuitive interface for students" },
-              { title: "Lecturer Portal", description: "Powerful tools for educators" },
-              { title: "Admin Panel", description: "Comprehensive system management" },
-              { title: "Mobile Experience", description: "Fully responsive on all devices" },
-              { title: "Payment Processing", description: "Secure financial transactions" },
-              { title: "Analytics & Reports", description: "Data-driven insights" },
+              {
+                title: "Student Dashboard",
+                description: "Clean, intuitive interface for students",
+              },
+              {
+                title: "Lecturer Portal",
+                description: "Powerful tools for educators",
+              },
+              {
+                title: "Admin Panel",
+                description: "Comprehensive system management",
+              },
+              {
+                title: "Mobile Experience",
+                description: "Fully responsive on all devices",
+              },
+              {
+                title: "Payment Processing",
+                description: "Secure financial transactions",
+              },
+              {
+                title: "Analytics & Reports",
+                description: "Data-driven insights",
+              },
             ].map((item, index) => (
               <Card
                 key={index}
@@ -503,9 +605,12 @@ export default function Landing() {
       <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Why Choose AMEU Smart School?</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Why Choose AMEU Smart School?
+            </h2>
             <p className="text-xl text-gray-600">
-              Built specifically for African universities with modern technology and local understanding
+              Built specifically for African universities with modern technology
+              and local understanding
             </p>
           </div>
 
@@ -519,7 +624,9 @@ export default function Landing() {
                   <benefit.icon className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">{benefit.title}</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    {benefit.title}
+                  </h3>
                   <p className="text-gray-600">{benefit.description}</p>
                 </div>
               </div>
@@ -532,8 +639,12 @@ export default function Landing() {
       <section id="pricing" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-xl text-gray-600">Choose the plan that fits your institution's needs</p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-gray-600">
+              Choose the plan that fits your institution's needs
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -544,7 +655,9 @@ export default function Landing() {
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-blue-500 text-white px-4 py-1">Most Popular</Badge>
+                    <Badge className="bg-blue-500 text-white px-4 py-1">
+                      Most Popular
+                    </Badge>
                   </div>
                 )}
                 <CardHeader className="text-center">
@@ -553,13 +666,20 @@ export default function Landing() {
                     <span className="text-4xl font-bold">{plan.price}</span>
                     <span className="text-gray-600">{plan.period}</span>
                   </div>
-                  <CardDescription className="mt-2">{plan.description}</CardDescription>
-                  <div className="mt-2 text-sm font-medium text-blue-600">{plan.students}</div>
+                  <CardDescription className="mt-2">
+                    {plan.description}
+                  </CardDescription>
+                  <div className="mt-2 text-sm font-medium text-blue-600">
+                    {plan.students}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3 mb-6">
                     {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center gap-3">
+                      <li
+                        key={featureIndex}
+                        className="flex items-center gap-3"
+                      >
                         <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
                         <span className="text-gray-700">{feature}</span>
                       </li>
@@ -573,7 +693,9 @@ export default function Landing() {
                     }`}
                     variant={plan.popular ? "default" : "outline"}
                   >
-                    {plan.name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
+                    {plan.name === "Enterprise"
+                      ? "Contact Sales"
+                      : "Start Free Trial"}
                   </Button>
                 </CardContent>
               </Card>
@@ -608,15 +730,27 @@ export default function Landing() {
       <section id="faq" className="py-16 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-gray-600">Get answers to common questions about our platform</p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xl text-gray-600">
+              Get answers to common questions about our platform
+            </p>
           </div>
 
           <Accordion type="single" collapsible className="w-full">
             {faqItems.map((item, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border-blue-100">
-                <AccordionTrigger className="text-left hover:text-blue-600">{item.question}</AccordionTrigger>
-                <AccordionContent className="text-gray-600 leading-relaxed">{item.answer}</AccordionContent>
+              <AccordionItem
+                key={index}
+                value={`item-${index}`}
+                className="border-blue-100"
+              >
+                <AccordionTrigger className="text-left hover:text-blue-600">
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-gray-600 leading-relaxed">
+                  {item.answer}
+                </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
@@ -626,12 +760,18 @@ export default function Landing() {
       {/* Call to Action */}
       <section className="py-16 bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4">Ready to Digitize Your School?</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+            Ready to Digitize Your School?
+          </h2>
           <p className="text-xl mb-8 text-blue-100">
-            Join thousands of institutions already using AMEU Smart School to streamline their operations.
+            Join thousands of institutions already using AMEU Smart School to
+            streamline their operations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+            <Button
+              size="lg"
+              className="bg-white text-blue-600 hover:bg-gray-100"
+            >
               <Play className="h-5 w-5 mr-2" />
               Book a Demo
             </Button>
@@ -661,20 +801,36 @@ export default function Landing() {
                 <span className="text-xl font-bold">AMEU Smart School</span>
               </div>
               <p className="text-gray-400 mb-6 max-w-md">
-                Empowering African universities with modern technology solutions for academic excellence and operational
-                efficiency.
+                Empowering African universities with modern technology solutions
+                for academic excellence and operational efficiency.
               </p>
               <div className="flex space-x-4">
-                <Button size="icon" variant="ghost" className="text-gray-400 hover:text-white hover:bg-gray-800">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white hover:bg-gray-800"
+                >
                   <Facebook className="h-5 w-5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="text-gray-400 hover:text-white hover:bg-gray-800">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white hover:bg-gray-800"
+                >
                   <Twitter className="h-5 w-5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="text-gray-400 hover:text-white hover:bg-gray-800">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white hover:bg-gray-800"
+                >
                   <Instagram className="h-5 w-5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="text-gray-400 hover:text-white hover:bg-gray-800">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white hover:bg-gray-800"
+                >
                   <Linkedin className="h-5 w-5" />
                 </Button>
               </div>
@@ -684,22 +840,34 @@ export default function Landing() {
               <h3 className="font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <a href="#features" className="hover:text-white transition-colors">
+                  <a
+                    href="#features"
+                    className="hover:text-white transition-colors"
+                  >
                     Features
                   </a>
                 </li>
                 <li>
-                  <a href="#pricing" className="hover:text-white transition-colors">
+                  <a
+                    href="#pricing"
+                    className="hover:text-white transition-colors"
+                  >
                     Pricing
                   </a>
                 </li>
                 <li>
-                  <Link to="/auth/login" className="hover:text-white transition-colors">
+                  <Link
+                    to="/auth/login"
+                    className="hover:text-white transition-colors"
+                  >
                     Login
                   </Link>
                 </li>
                 <li>
-                  <Link to="/auth/register" className="hover:text-white transition-colors">
+                  <Link
+                    to="/auth/register"
+                    className="hover:text-white transition-colors"
+                  >
                     Sign Up
                   </Link>
                 </li>
@@ -745,5 +913,5 @@ export default function Landing() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

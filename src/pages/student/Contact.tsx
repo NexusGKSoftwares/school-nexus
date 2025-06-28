@@ -1,9 +1,15 @@
-import { Phone, Mail, MapPin, Clock, Send, MessageSquare } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
+import { Phone, Mail, MapPin, Clock, Send, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 
 const contactInfo = [
   {
@@ -30,7 +36,7 @@ const contactInfo = [
       { icon: Clock, text: "24/7 Support Available" },
     ],
   },
-]
+];
 
 const departments = [
   {
@@ -57,7 +63,7 @@ const departments = [
     phone: "+1 (555) 123-4573",
     hours: "Mon-Fri: 10:00 AM - 4:00 PM",
   },
-]
+];
 
 export default function Contact() {
   return (
@@ -66,7 +72,9 @@ export default function Contact() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Contact Us</h1>
-          <p className="text-gray-600">Get in touch with our team for assistance</p>
+          <p className="text-gray-600">
+            Get in touch with our team for assistance
+          </p>
         </div>
         <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white">
           <MessageSquare className="h-4 w-4 mr-2" />
@@ -77,9 +85,14 @@ export default function Contact() {
       {/* Contact Information */}
       <div className="grid gap-4 md:grid-cols-3">
         {contactInfo.map((info, index) => (
-          <Card key={index} className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg">
+          <Card
+            key={index}
+            className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg"
+          >
             <CardHeader>
-              <CardTitle className="text-lg text-gray-800">{info.title}</CardTitle>
+              <CardTitle className="text-lg text-gray-800">
+                {info.title}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {info.details.map((detail, detailIndex) => (
@@ -103,7 +116,9 @@ export default function Contact() {
               <Send className="h-5 w-5 text-blue-600" />
               Send us a Message
             </CardTitle>
-            <CardDescription>Fill out the form below and we'll get back to you soon</CardDescription>
+            <CardDescription>
+              Fill out the form below and we'll get back to you soon
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
@@ -118,7 +133,11 @@ export default function Contact() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" placeholder="Enter your email address" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject">Subject</Label>
@@ -146,11 +165,16 @@ export default function Contact() {
               <Phone className="h-5 w-5 text-green-600" />
               Department Contacts
             </CardTitle>
-            <CardDescription>Direct contact information for specific departments</CardDescription>
+            <CardDescription>
+              Direct contact information for specific departments
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {departments.map((dept, index) => (
-              <div key={index} className="p-3 rounded-lg border border-gray-200">
+              <div
+                key={index}
+                className="p-3 rounded-lg border border-gray-200"
+              >
                 <h4 className="font-medium text-gray-800 mb-2">{dept.name}</h4>
                 <div className="space-y-1 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
@@ -198,7 +222,9 @@ export default function Contact() {
               </div>
               <Separator />
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Campus Hours</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Campus Hours
+                </h3>
                 <div className="space-y-1 text-sm text-gray-600">
                   <div>Monday - Friday: 7:00 AM - 10:00 PM</div>
                   <div>Saturday: 8:00 AM - 8:00 PM</div>
@@ -207,7 +233,9 @@ export default function Contact() {
               </div>
               <Separator />
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Transportation</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Transportation
+                </h3>
                 <div className="space-y-1 text-sm text-gray-600">
                   <div>• Bus routes 15, 22, and 45</div>
                   <div>• Metro Blue Line (University Station)</div>
@@ -226,5 +254,5 @@ export default function Contact() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

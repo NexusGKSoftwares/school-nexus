@@ -1,26 +1,32 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff, GraduationCap, User, Shield, Users } from "lucide-react"
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, GraduationCap, User, Shield, Users } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth } from "../../contexts/AuthContext"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [userType, setUserType] = useState("student")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
-  const { signIn, profile } = useAuth()
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState("student");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { signIn, profile } = useAuth();
 
   // Redirect if already logged in
   React.useEffect(() => {
@@ -29,24 +35,26 @@ export default function Login() {
         student: "/student",
         lecturer: "/lecturer",
         admin: "/admin",
-      }
-      navigate(redirectMap[profile.role] || "/")
+      };
+      navigate(redirectMap[profile.role] || "/");
     }
-  }, [profile, navigate])
+  }, [profile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    const { error } = await signIn(email, password)
+    const { error } = await signIn(email, password);
 
     if (error) {
-      setError(error.message || "Failed to sign in. Please check your credentials.")
+      setError(
+        error.message || "Failed to sign in. Please check your credentials.",
+      );
     }
 
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   const userTypeConfig = {
     student: {
@@ -67,10 +75,10 @@ export default function Login() {
       description: "System administration and management",
       color: "from-purple-500 to-violet-600",
     },
-  }
+  };
 
-  const currentConfig = userTypeConfig[userType as keyof typeof userTypeConfig]
-  const IconComponent = currentConfig.icon
+  const currentConfig = userTypeConfig[userType as keyof typeof userTypeConfig];
+  const IconComponent = currentConfig.icon;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
@@ -80,9 +88,13 @@ export default function Login() {
             <div className="flex aspect-square size-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
               <GraduationCap className="size-6" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">AMEU Smart School</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              AMEU Smart School
+            </h1>
           </div>
-          <p className="text-gray-600">Welcome back! Please sign in to your account.</p>
+          <p className="text-gray-600">
+            Welcome back! Please sign in to your account.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 items-start">
@@ -93,30 +105,38 @@ export default function Login() {
                 <Users className="h-5 w-5 text-blue-600" />
                 Portal Information
               </CardTitle>
-              <CardDescription>Choose your role to access the appropriate portal</CardDescription>
+              <CardDescription>
+                Choose your role to access the appropriate portal
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {Object.entries(userTypeConfig).map(([type, config]) => {
-                const Icon = config.icon
+                const Icon = config.icon;
                 return (
                   <div
                     key={type}
                     onClick={() => setUserType(type)}
                     className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md bg-white/50 ${
-                      userType === type ? 'border-blue-300 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+                      userType === type
+                        ? "border-blue-300 bg-blue-50"
+                        : "border-gray-200 hover:border-blue-300"
                     }`}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <div className={`p-2 rounded-lg bg-gradient-to-r ${config.color} text-white`}>
+                      <div
+                        className={`p-2 rounded-lg bg-gradient-to-r ${config.color} text-white`}
+                      >
                         <Icon className="h-4 w-4" />
                       </div>
                       <div>
                         <h3 className="font-semibold capitalize">{type}</h3>
-                        <p className="text-sm text-gray-600">{config.description}</p>
+                        <p className="text-sm text-gray-600">
+                          {config.description}
+                        </p>
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </CardContent>
           </Card>
@@ -125,7 +145,9 @@ export default function Login() {
           <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
-                <div className={`p-2 rounded-lg bg-gradient-to-r ${currentConfig.color} text-white`}>
+                <div
+                  className={`p-2 rounded-lg bg-gradient-to-r ${currentConfig.color} text-white`}
+                >
                   <IconComponent className="h-5 w-5" />
                 </div>
                 <div>
@@ -135,7 +157,11 @@ export default function Login() {
               </div>
             </CardHeader>
             <CardContent>
-              <Tabs value={userType} onValueChange={setUserType} className="mb-6">
+              <Tabs
+                value={userType}
+                onValueChange={setUserType}
+                className="mb-6"
+              >
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="student">Student</TabsTrigger>
                   <TabsTrigger value="lecturer">Lecturer</TabsTrigger>
@@ -145,7 +171,9 @@ export default function Login() {
 
               {error && (
                 <Alert className="mb-4 border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-700">{error}</AlertDescription>
+                  <AlertDescription className="text-red-700">
+                    {error}
+                  </AlertDescription>
                 </Alert>
               )}
 
@@ -212,7 +240,10 @@ export default function Login() {
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
                   Don't have an account?{" "}
-                  <Link to="/auth/register" className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                  <Link
+                    to="/auth/register"
+                    className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                  >
                     Sign up
                   </Link>
                 </p>
@@ -222,11 +253,14 @@ export default function Login() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link to="/" className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+          <Link
+            to="/"
+            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+          >
             ← Back to Home
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

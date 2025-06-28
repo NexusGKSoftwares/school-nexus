@@ -1,56 +1,56 @@
-import { Routes, Route } from "react-router-dom"
-import ProtectedRoute from "./components/ProtectedRoute"
-import { AuthProvider } from "./contexts/AuthContext"
+import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Public Pages
-import Landing from "./pages/Landing"
-import Home from "./pages/Home"
+import Landing from "./pages/Landing";
+import Home from "./pages/Home";
 
 // Auth Pages
-import Login from "./pages/auth/Login"
-import Register from "./pages/auth/Register"
-import ForgotPassword from "./pages/auth/ForgotPassword"
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 
 // Student Pages
-import StudentLayout from "./layouts/StudentLayout"
-import StudentDashboard from "./pages/student/Dashboard"
-import TimeSchedule from "./pages/student/TimeSchedule"
-import Notifications from "./pages/student/Notifications"
-import Messages from "./pages/student/Messages"
-import LearningPlan from "./pages/student/LearningPlan"
-import Help from "./pages/student/Help"
-import Contact from "./pages/student/Contact"
+import StudentLayout from "./layouts/StudentLayout";
+import StudentDashboard from "./pages/student/Dashboard";
+import TimeSchedule from "./pages/student/TimeSchedule";
+import Notifications from "./pages/student/Notifications";
+import Messages from "./pages/student/Messages";
+import LearningPlan from "./pages/student/LearningPlan";
+import Help from "./pages/student/Help";
+import Contact from "./pages/student/Contact";
 
 // Lecturer Pages
-import LecturerLayout from "./layouts/LecturerLayout"
-import LecturerDashboard from "./pages/lecturer/Dashboard"
-import LecturerProfile from "./pages/lecturer/Profile"
-import LecturerAssignments from "./pages/lecturer/Assignments"
-import LecturerAttendance from "./pages/lecturer/Attendance"
-import LecturerCourses from "./pages/lecturer/Courses"
-import LecturerGrading from "./pages/lecturer/Grading"
-import LecturerMaterials from "./pages/lecturer/Materials"
-import LecturerQuizzes from "./pages/lecturer/Quizzes"
-import LecturerReports from "./pages/lecturer/Reports"
+import LecturerLayout from "./layouts/LecturerLayout";
+import LecturerDashboard from "./pages/lecturer/Dashboard";
+import LecturerProfile from "./pages/lecturer/Profile";
+import LecturerAssignments from "./pages/lecturer/Assignments";
+import LecturerAttendance from "./pages/lecturer/Attendance";
+import LecturerCourses from "./pages/lecturer/Courses";
+import LecturerGrading from "./pages/lecturer/Grading";
+import LecturerMaterials from "./pages/lecturer/Materials";
+import LecturerQuizzes from "./pages/lecturer/Quizzes";
+import LecturerReports from "./pages/lecturer/Reports";
 
 // Admin Pages
-import AdminLayout from "./layouts/AdminLayout"
-import AdminDashboard from "./pages/admin/Dashboard"
-import AdminStudents from "./pages/admin/Students"
-import AdminLecturers from "./pages/admin/Lecturers"
-import AdminStaff from "./pages/admin/Staff"
-import AdminFaculties from "./pages/admin/Faculties"
-import AdminCourses from "./pages/admin/Courses"
-import AdminCalendar from "./pages/admin/Calendar"
-import AdminRegistrations from "./pages/admin/Registrations"
-import AdminTuition from "./pages/admin/Tuition"
-import AdminPayments from "./pages/admin/Payments"
-import AdminScholarships from "./pages/admin/Scholarships"
-import AdminRefunds from "./pages/admin/Refunds"
-import AdminSettings from "./pages/admin/Settings"
-import AdminSupport from "./pages/admin/Support"
-import AdminExams from "./pages/admin/Exams"
-import AdminAnnouncements from "./pages/admin/Announcements"
+import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminStudents from "./pages/admin/Students";
+import AdminLecturers from "./pages/admin/Lecturers";
+import AdminStaff from "./pages/admin/Staff";
+import AdminFaculties from "./pages/admin/Faculties";
+import AdminCourses from "./pages/admin/Courses";
+import AdminCalendar from "./pages/admin/Calendar";
+import AdminRegistrations from "./pages/admin/Registrations";
+import AdminTuition from "./pages/admin/Tuition";
+import AdminPayments from "./pages/admin/Payments";
+import AdminScholarships from "./pages/admin/Scholarships";
+import AdminRefunds from "./pages/admin/Refunds";
+import AdminSettings from "./pages/admin/Settings";
+import AdminSupport from "./pages/admin/Support";
+import AdminExams from "./pages/admin/Exams";
+import AdminAnnouncements from "./pages/admin/Announcements";
 
 function App() {
   return (
@@ -136,7 +136,7 @@ function App() {
         </Route>
       </Routes>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

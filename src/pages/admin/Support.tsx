@@ -1,14 +1,36 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { HelpCircle, Search, Filter, Download, Edit, Eye, Mail, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  HelpCircle,
+  Search,
+  Filter,
+  Download,
+  Edit,
+  Eye,
+  Mail,
+  Loader2,
+} from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,113 +38,134 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { supportService, studentService, facultyService } from "@/lib/dataService"
+} from "@/components/ui/dropdown-menu";
+import {
+  supportService,
+  studentService,
+  facultyService,
+} from "@/lib/dataService";
 
 interface SupportTicket {
-  id: string
-  studentName: string
-  studentId: string
-  email: string
-  subject: string
-  date: string
-  status: string
-  priority: string
-  department: string
-  description: string
-  avatar: string
+  id: string;
+  studentName: string;
+  studentId: string;
+  email: string;
+  subject: string;
+  date: string;
+  status: string;
+  priority: string;
+  department: string;
+  description: string;
+  avatar: string;
 }
 
 export default function AdminSupport() {
-  const [supportTicketsData, setSupportTicketsData] = useState<SupportTicket[]>([])
-  const [ticketPriorities, setTicketPriorities] = useState<string[]>(["All Priorities"])
-  const [ticketStatus, setTicketStatus] = useState<string[]>(["All Statuses"])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedPriority, setSelectedPriority] = useState("All Priorities")
-  const [selectedStatus, setSelectedStatus] = useState("All Statuses")
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [supportTicketsData, setSupportTicketsData] = useState<SupportTicket[]>(
+    [],
+  );
+  const [ticketPriorities, setTicketPriorities] = useState<string[]>([
+    "All Priorities",
+  ]);
+  const [ticketStatus, setTicketStatus] = useState<string[]>(["All Statuses"]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState("All Priorities");
+  const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
-      setLoading(true)
-      
+      setLoading(true);
+
       // Fetch support tickets
-      const { data: tickets, error: ticketsError } = await supportService.getSupportTickets()
-      
+      const { data: tickets, error: ticketsError } =
+        await supportService.getSupportTickets();
+
       if (ticketsError) {
-        setError(ticketsError.message)
-        return
+        setError(ticketsError.message);
+        return;
       }
 
       // Fetch students for additional data
-      const { data: students } = await studentService.getStudents()
-      
+      const { data: students } = await studentService.getStudents();
+
       // Fetch faculties for additional data
-      const { data: faculties } = await facultyService.getFaculties()
+      const { data: faculties } = await facultyService.getFaculties();
 
       if (tickets) {
         const transformedTickets: SupportTicket[] = tickets.map((ticket) => {
-          const student = students?.find(s => s.id === ticket.student_id)
-          const faculty = faculties?.find(f => f.id === student?.faculty_id)
-          
+          const student = students?.find((s) => s.id === ticket.student_id);
+          const faculty = faculties?.find((f) => f.id === student?.faculty_id);
+
           return {
             id: ticket.id,
-            studentName: student ? `${student.first_name} ${student.last_name}` : "Unknown Student",
+            studentName: student
+              ? `${student.first_name} ${student.last_name}`
+              : "Unknown Student",
             studentId: student?.student_id || "N/A",
             email: student?.email || "N/A",
             subject: ticket.subject || "General Inquiry",
-            date: ticket.created_at ? new Date(ticket.created_at).toISOString().split('T')[0] : "N/A",
+            date: ticket.created_at
+              ? new Date(ticket.created_at).toISOString().split("T")[0]
+              : "N/A",
             status: ticket.status,
             priority: ticket.priority || "Medium",
             department: faculty?.name || "General",
             description: ticket.description || "No description provided",
-            avatar: student?.avatar_url || "/placeholder.svg?height=40&width=40",
-          }
-        })
-        setSupportTicketsData(transformedTickets)
+            avatar:
+              student?.avatar_url || "/placeholder.svg?height=40&width=40",
+          };
+        });
+        setSupportTicketsData(transformedTickets);
 
         // Generate filter options
-        const uniquePriorities = Array.from(new Set(transformedTickets.map(t => t.priority)))
-        const uniqueStatuses = Array.from(new Set(transformedTickets.map(t => t.status)))
-        
-        setTicketPriorities(["All Priorities", ...uniquePriorities])
-        setTicketStatus(["All Statuses", ...uniqueStatuses])
+        const uniquePriorities = Array.from(
+          new Set(transformedTickets.map((t) => t.priority)),
+        );
+        const uniqueStatuses = Array.from(
+          new Set(transformedTickets.map((t) => t.status)),
+        );
+
+        setTicketPriorities(["All Priorities", ...uniquePriorities]);
+        setTicketStatus(["All Statuses", ...uniqueStatuses]);
       }
     } catch (err) {
-      setError("Failed to fetch support ticket data")
-      console.error("Error fetching support ticket data:", err)
+      setError("Failed to fetch support ticket data");
+      console.error("Error fetching support ticket data:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filteredTickets = supportTicketsData.filter((ticket) => {
     const matchesSearch =
       ticket.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesPriority = selectedPriority === "All Priorities" || ticket.priority === selectedPriority
-    const matchesStatus = selectedStatus === "All Statuses" || ticket.status === selectedStatus
-    return matchesSearch && matchesPriority && matchesStatus
-  })
+      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesPriority =
+      selectedPriority === "All Priorities" ||
+      ticket.priority === selectedPriority;
+    const matchesStatus =
+      selectedStatus === "All Statuses" || ticket.status === selectedStatus;
+    return matchesSearch && matchesPriority && matchesStatus;
+  });
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
-        return "bg-red-500"
+        return "bg-red-500";
       case "Medium":
-        return "bg-orange-500"
+        return "bg-orange-500";
       case "Low":
-        return "bg-green-500"
+        return "bg-green-500";
       default:
-        return "bg-gray-500"
+        return "bg-gray-500";
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -132,7 +175,7 @@ export default function AdminSupport() {
           <span>Loading support ticket data...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -143,7 +186,7 @@ export default function AdminSupport() {
           <Button onClick={fetchData}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -152,10 +195,15 @@ export default function AdminSupport() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Support Tickets</h1>
-          <p className="text-gray-600">Manage and respond to student support tickets</p>
+          <p className="text-gray-600">
+            Manage and respond to student support tickets
+          </p>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="outline" className="border-blue-200 hover:bg-blue-50">
+          <Button
+            variant="outline"
+            className="border-blue-200 hover:bg-blue-50"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>
@@ -177,7 +225,10 @@ export default function AdminSupport() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-blue-200 hover:bg-blue-50">
+                <Button
+                  variant="outline"
+                  className="border-blue-200 hover:bg-blue-50"
+                >
                   <Filter className="h-4 w-4 mr-2" />
                   {selectedPriority}
                 </Button>
@@ -186,7 +237,10 @@ export default function AdminSupport() {
                 <DropdownMenuLabel>Filter by Priority</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {ticketPriorities.map((priority) => (
-                  <DropdownMenuItem key={priority} onClick={() => setSelectedPriority(priority)}>
+                  <DropdownMenuItem
+                    key={priority}
+                    onClick={() => setSelectedPriority(priority)}
+                  >
                     {priority}
                   </DropdownMenuItem>
                 ))}
@@ -194,7 +248,10 @@ export default function AdminSupport() {
             </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-blue-200 hover:bg-blue-50">
+                <Button
+                  variant="outline"
+                  className="border-blue-200 hover:bg-blue-50"
+                >
                   <Filter className="h-4 w-4 mr-2" />
                   {selectedStatus}
                 </Button>
@@ -203,7 +260,10 @@ export default function AdminSupport() {
                 <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {ticketStatus.map((status) => (
-                  <DropdownMenuItem key={status} onClick={() => setSelectedStatus(status)}>
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={() => setSelectedStatus(status)}
+                  >
                     {status}
                   </DropdownMenuItem>
                 ))}
@@ -220,13 +280,17 @@ export default function AdminSupport() {
             <HelpCircle className="h-5 w-5 text-blue-600" />
             Support Tickets
           </CardTitle>
-          <CardDescription>Manage and respond to student support tickets</CardDescription>
+          <CardDescription>
+            Manage and respond to student support tickets
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredTickets.length === 0 ? (
             <div className="text-center py-8">
               <HelpCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No support tickets found matching your criteria.</p>
+              <p className="text-gray-500">
+                No support tickets found matching your criteria.
+              </p>
             </div>
           ) : (
             <Table>
@@ -246,19 +310,35 @@ export default function AdminSupport() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={ticket.avatar} alt={ticket.studentName} />
-                          <AvatarFallback>{ticket.studentName.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                          <AvatarImage
+                            src={ticket.avatar}
+                            alt={ticket.studentName}
+                          />
+                          <AvatarFallback>
+                            {ticket.studentName
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-900">{ticket.studentName}</div>
-                          <div className="text-sm text-gray-600">{ticket.email}</div>
+                          <div className="font-medium text-gray-900">
+                            {ticket.studentName}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {ticket.email}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium text-gray-900">{ticket.subject}</div>
-                        <div className="text-sm text-gray-600">{ticket.department}</div>
+                        <div className="font-medium text-gray-900">
+                          {ticket.subject}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {ticket.department}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>{ticket.date}</TableCell>
@@ -268,7 +348,15 @@ export default function AdminSupport() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={ticket.status === "Open" ? "bg-green-500" : ticket.status === "Pending" ? "bg-orange-500" : "bg-gray-500"}>
+                      <Badge
+                        className={
+                          ticket.status === "Open"
+                            ? "bg-green-500"
+                            : ticket.status === "Pending"
+                              ? "bg-orange-500"
+                              : "bg-gray-500"
+                        }
+                      >
                         {ticket.status}
                       </Badge>
                     </TableCell>
@@ -309,5 +397,5 @@ export default function AdminSupport() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

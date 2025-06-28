@@ -1,8 +1,21 @@
-import { GraduationCap, Target, BookOpen, Award, TrendingUp, Calendar } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+import {
+  GraduationCap,
+  Target,
+  BookOpen,
+  Award,
+  TrendingUp,
+  Calendar,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 const learningGoals = [
   {
@@ -37,7 +50,7 @@ const learningGoals = [
     deadline: "Nov 2024",
     status: "completed",
   },
-]
+];
 
 const recommendedCourses = [
   {
@@ -61,7 +74,7 @@ const recommendedCourses = [
     difficulty: "Intermediate",
     rating: 4.7,
   },
-]
+];
 
 const achievements = [
   {
@@ -82,7 +95,7 @@ const achievements = [
     date: "Sep 2024",
     icon: BookOpen,
   },
-]
+];
 
 export default function LearningPlan() {
   return (
@@ -91,7 +104,9 @@ export default function LearningPlan() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Learning Plan</h1>
-          <p className="text-gray-600">Track your academic progress and plan your future</p>
+          <p className="text-gray-600">
+            Track your academic progress and plan your future
+          </p>
         </div>
         <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white">
           <Target className="h-4 w-4 mr-2" />
@@ -152,7 +167,9 @@ export default function LearningPlan() {
               <Target className="h-5 w-5 text-blue-600" />
               Learning Goals
             </CardTitle>
-            <CardDescription>Your academic objectives and progress</CardDescription>
+            <CardDescription>
+              Your academic objectives and progress
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {learningGoals.map((goal) => (
@@ -163,20 +180,32 @@ export default function LearningPlan() {
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-gray-800">{goal.title}</h3>
-                      <p className="text-sm text-gray-600">{goal.description}</p>
+                      <h3 className="font-semibold text-gray-800">
+                        {goal.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {goal.description}
+                      </p>
                     </div>
                     <Badge
-                      variant={goal.status === "completed" ? "default" : "secondary"}
-                      className={goal.status === "completed" ? "bg-green-500" : ""}
+                      variant={
+                        goal.status === "completed" ? "default" : "secondary"
+                      }
+                      className={
+                        goal.status === "completed" ? "bg-green-500" : ""
+                      }
                     >
-                      {goal.status === "completed" ? "Completed" : "In Progress"}
+                      {goal.status === "completed"
+                        ? "Completed"
+                        : "In Progress"}
                     </Badge>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Progress</span>
-                      <span className="font-medium text-gray-800">{goal.progress}%</span>
+                      <span className="font-medium text-gray-800">
+                        {goal.progress}%
+                      </span>
                     </div>
                     <Progress value={goal.progress} className="h-2" />
                     <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -210,9 +239,15 @@ export default function LearningPlan() {
                     <achievement.icon className="h-4 w-4 text-yellow-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-800">{achievement.title}</h4>
-                    <p className="text-sm text-gray-600">{achievement.description}</p>
-                    <span className="text-xs text-gray-500">{achievement.date}</span>
+                    <h4 className="font-medium text-gray-800">
+                      {achievement.title}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {achievement.description}
+                    </p>
+                    <span className="text-xs text-gray-500">
+                      {achievement.date}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -228,7 +263,9 @@ export default function LearningPlan() {
             <BookOpen className="h-5 w-5 text-green-600" />
             Recommended Courses
           </CardTitle>
-          <CardDescription>Courses that align with your learning goals</CardDescription>
+          <CardDescription>
+            Courses that align with your learning goals
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
@@ -239,16 +276,27 @@ export default function LearningPlan() {
               >
                 <div className="space-y-3">
                   <div>
-                    <h3 className="font-semibold text-gray-800">{course.title}</h3>
-                    <p className="text-sm text-green-600 font-medium">{course.code}</p>
+                    <h3 className="font-semibold text-gray-800">
+                      {course.title}
+                    </h3>
+                    <p className="text-sm text-green-600 font-medium">
+                      {course.code}
+                    </p>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{course.credits} Credits</span>
+                    <span className="text-gray-600">
+                      {course.credits} Credits
+                    </span>
                     <Badge variant="outline">{course.difficulty}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Rating: {course.rating}/5</span>
-                    <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">
+                    <span className="text-sm text-gray-600">
+                      Rating: {course.rating}/5
+                    </span>
+                    <Button
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                    >
                       Enroll
                     </Button>
                   </div>
@@ -259,5 +307,5 @@ export default function LearningPlan() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

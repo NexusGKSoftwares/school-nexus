@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 const LecturerReports = () => {
   return (
@@ -6,7 +6,7 @@ const LecturerReports = () => {
       <h1 className="text-3xl font-bold text-gray-900">Performance Reports</h1>
       <p className="text-gray-600">View and manage performance reports</p>
     </div>
-  )
-}
+  );
+};
 
-export default LecturerReports
+export default LecturerReports;

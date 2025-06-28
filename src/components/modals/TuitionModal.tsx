@@ -1,15 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Tuition {
   id?: string;
@@ -18,7 +33,7 @@ interface Tuition {
   semester: string;
   amount: number;
   due_date: Date;
-  status: 'pending' | 'paid' | 'overdue' | 'waived';
+  status: "pending" | "paid" | "overdue" | "waived";
   payment_method?: string;
   notes?: string;
   created_at?: string;
@@ -40,17 +55,17 @@ export function TuitionModal({
   onSave,
   tuition,
   students,
-  isLoading = false
+  isLoading = false,
 }: TuitionModalProps) {
   const [formData, setFormData] = useState<Tuition>({
-    student_id: '',
+    student_id: "",
     academic_year: new Date().getFullYear().toString(),
-    semester: '',
+    semester: "",
     amount: 0,
     due_date: new Date(),
-    status: 'pending',
-    payment_method: '',
-    notes: ''
+    status: "pending",
+    payment_method: "",
+    notes: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -59,18 +74,18 @@ export function TuitionModal({
     if (tuition) {
       setFormData({
         ...tuition,
-        due_date: tuition.due_date ? new Date(tuition.due_date) : new Date()
+        due_date: tuition.due_date ? new Date(tuition.due_date) : new Date(),
       });
     } else {
       setFormData({
-        student_id: '',
+        student_id: "",
         academic_year: new Date().getFullYear().toString(),
-        semester: '',
+        semester: "",
         amount: 0,
         due_date: new Date(),
-        status: 'pending',
-        payment_method: '',
-        notes: ''
+        status: "pending",
+        payment_method: "",
+        notes: "",
       });
     }
     setErrors({});
@@ -80,16 +95,16 @@ export function TuitionModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.student_id) {
-      newErrors.student_id = 'Student is required';
+      newErrors.student_id = "Student is required";
     }
     if (!formData.semester) {
-      newErrors.semester = 'Semester is required';
+      newErrors.semester = "Semester is required";
     }
     if (!formData.academic_year) {
-      newErrors.academic_year = 'Academic year is required';
+      newErrors.academic_year = "Academic year is required";
     }
     if (formData.amount <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = "Amount must be greater than 0";
     }
 
     setErrors(newErrors);
@@ -104,9 +119,9 @@ export function TuitionModal({
   };
 
   const handleInputChange = (field: keyof Tuition, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -115,19 +130,23 @@ export function TuitionModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {tuition ? 'Edit Tuition' : 'Add New Tuition'}
+            {tuition ? "Edit Tuition" : "Add New Tuition"}
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="student_id">Student</Label>
               <Select
                 value={formData.student_id}
-                onValueChange={(value) => handleInputChange('student_id', value)}
+                onValueChange={(value) =>
+                  handleInputChange("student_id", value)
+                }
               >
-                <SelectTrigger className={cn(errors.student_id && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.student_id && "border-red-500")}
+                >
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent>
@@ -151,9 +170,11 @@ export function TuitionModal({
                 step="0.01"
                 min="0"
                 value={formData.amount}
-                onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleInputChange("amount", parseFloat(e.target.value) || 0)
+                }
                 placeholder="0.00"
-                className={cn(errors.amount && 'border-red-500')}
+                className={cn(errors.amount && "border-red-500")}
               />
               {errors.amount && (
                 <p className="text-sm text-red-500">{errors.amount}</p>
@@ -164,9 +185,11 @@ export function TuitionModal({
               <Label htmlFor="semester">Semester</Label>
               <Select
                 value={formData.semester}
-                onValueChange={(value) => handleInputChange('semester', value)}
+                onValueChange={(value) => handleInputChange("semester", value)}
               >
-                <SelectTrigger className={cn(errors.semester && 'border-red-500')}>
+                <SelectTrigger
+                  className={cn(errors.semester && "border-red-500")}
+                >
                   <SelectValue placeholder="Select semester" />
                 </SelectTrigger>
                 <SelectContent>
@@ -186,9 +209,11 @@ export function TuitionModal({
                 id="academic_year"
                 type="text"
                 value={formData.academic_year}
-                onChange={(e) => handleInputChange('academic_year', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("academic_year", e.target.value)
+                }
                 placeholder="e.g., 2024-2025"
-                className={cn(errors.academic_year && 'border-red-500')}
+                className={cn(errors.academic_year && "border-red-500")}
               />
               {errors.academic_year && (
                 <p className="text-sm text-red-500">{errors.academic_year}</p>
@@ -202,13 +227,13 @@ export function TuitionModal({
                   <Button
                     variant="outline"
                     className={cn(
-                      'w-full justify-start text-left font-normal',
-                      !formData.due_date && 'text-muted-foreground'
+                      "w-full justify-start text-left font-normal",
+                      !formData.due_date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.due_date ? (
-                      format(formData.due_date, 'PPP')
+                      format(formData.due_date, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -218,7 +243,7 @@ export function TuitionModal({
                   <Calendar
                     mode="single"
                     selected={formData.due_date}
-                    onSelect={(date) => handleInputChange('due_date', date)}
+                    onSelect={(date) => handleInputChange("due_date", date)}
                     initialFocus
                   />
                 </PopoverContent>
@@ -229,7 +254,7 @@ export function TuitionModal({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => handleInputChange('status', value)}
+                onValueChange={(value) => handleInputChange("status", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -246,8 +271,10 @@ export function TuitionModal({
             <div className="space-y-2">
               <Label htmlFor="payment_method">Payment Method</Label>
               <Select
-                value={formData.payment_method || ''}
-                onValueChange={(value) => handleInputChange('payment_method', value)}
+                value={formData.payment_method || ""}
+                onValueChange={(value) =>
+                  handleInputChange("payment_method", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select payment method" />
@@ -267,8 +294,8 @@ export function TuitionModal({
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
-              value={formData.notes || ''}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
+              value={formData.notes || ""}
+              onChange={(e) => handleInputChange("notes", e.target.value)}
               placeholder="Additional notes about the tuition..."
               rows={3}
             />
@@ -280,11 +307,11 @@ export function TuitionModal({
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {tuition ? 'Update' : 'Create'} Tuition
+              {tuition ? "Update" : "Create"} Tuition
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-} 
+}

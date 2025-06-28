@@ -1,14 +1,37 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { RefreshCw, Search, Filter, CheckCircle, XCircle, Clock, Eye, Mail, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  RefreshCw,
+  Search,
+  Filter,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Eye,
+  Mail,
+  Loader2,
+} from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,208 +39,249 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { refundService, studentService, courseService } from "@/lib/dataService"
-import { RefundModal } from "@/components/modals/RefundModal"
-import DeleteConfirmModal  from "@/components/modals/DeleteConfirmModal"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/dropdown-menu";
+import {
+  refundService,
+  studentService,
+  courseService,
+} from "@/lib/dataService";
+import { RefundModal } from "@/components/modals/RefundModal";
+import DeleteConfirmModal from "@/components/modals/DeleteConfirmModal";
+import { useToast } from "@/hooks/use-toast";
 
 interface Refund {
-  id: string
-  studentName: string
-  studentId: string
-  email: string
-  amount: number
-  date: string
-  reason: string
-  status: string
-  requestDate: string
-  course: string
-  avatar: string
+  id: string;
+  studentName: string;
+  studentId: string;
+  email: string;
+  amount: number;
+  date: string;
+  reason: string;
+  status: string;
+  requestDate: string;
+  course: string;
+  avatar: string;
 }
 
 export default function AdminRefunds() {
-  const [refundData, setRefundData] = useState<Refund[]>([])
-  const [refundReasons, setRefundReasons] = useState<string[]>(["All Reasons"])
-  const [refundStatus, setRefundStatus] = useState<string[]>(["All Statuses"])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedReason, setSelectedReason] = useState("All Reasons")
-  const [selectedStatus, setSelectedStatus] = useState("All Statuses")
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedRefund, setSelectedRefund] = useState<any>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
+  const [refundData, setRefundData] = useState<Refund[]>([]);
+  const [refundReasons, setRefundReasons] = useState<string[]>(["All Reasons"]);
+  const [refundStatus, setRefundStatus] = useState<string[]>(["All Statuses"]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedReason, setSelectedReason] = useState("All Reasons");
+  const [selectedStatus, setSelectedStatus] = useState("All Statuses");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedRefund, setSelectedRefund] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
-      setLoading(true)
-      
+      setLoading(true);
+
       // Fetch refunds
-      const { data: refunds, error: refundsError } = await refundService.getRefunds()
-      
+      const { data: refunds, error: refundsError } =
+        await refundService.getRefunds();
+
       if (refundsError) {
-        setError(refundsError.message)
-        return
+        setError(refundsError.message);
+        return;
       }
 
       // Fetch students for additional data
-      const { data: students } = await studentService.getStudents()
-      
+      const { data: students } = await studentService.getStudents();
+
       // Fetch courses for additional data
-      const { data: courses } = await courseService.getCourses()
+      const { data: courses } = await courseService.getCourses();
 
       if (refunds) {
         const transformedRefunds: Refund[] = refunds.map((refund) => {
-          const student = students?.find(s => s.id === refund.student_id)
-          const course = courses?.find(c => c.id === refund.course_id)
-          
+          const student = students?.find((s) => s.id === refund.student_id);
+          const course = courses?.find((c) => c.id === refund.course_id);
+
           return {
             id: refund.id,
-            studentName: student ? `${student.first_name} ${student.last_name}` : "Unknown Student",
+            studentName: student
+              ? `${student.first_name} ${student.last_name}`
+              : "Unknown Student",
             studentId: student?.student_id || "N/A",
             email: student?.email || "N/A",
             amount: refund.amount || 0,
-            date: refund.refund_date ? new Date(refund.refund_date).toISOString().split('T')[0] : "TBD",
+            date: refund.refund_date
+              ? new Date(refund.refund_date).toISOString().split("T")[0]
+              : "TBD",
             reason: refund.reason || "General refund",
             status: refund.status,
-            requestDate: refund.created_at ? new Date(refund.created_at).toISOString().split('T')[0] : "N/A",
+            requestDate: refund.created_at
+              ? new Date(refund.created_at).toISOString().split("T")[0]
+              : "N/A",
             course: course?.name || "Unknown Course",
-            avatar: student?.avatar_url || "/placeholder.svg?height=40&width=40",
-          }
-        })
-        setRefundData(transformedRefunds)
+            avatar:
+              student?.avatar_url || "/placeholder.svg?height=40&width=40",
+          };
+        });
+        setRefundData(transformedRefunds);
 
         // Generate filter options
-        const uniqueReasons = Array.from(new Set(transformedRefunds.map(r => r.reason)))
-        const uniqueStatuses = Array.from(new Set(transformedRefunds.map(r => r.status)))
-        
-        setRefundReasons(["All Reasons", ...uniqueReasons])
-        setRefundStatus(["All Statuses", ...uniqueStatuses])
+        const uniqueReasons = Array.from(
+          new Set(transformedRefunds.map((r) => r.reason)),
+        );
+        const uniqueStatuses = Array.from(
+          new Set(transformedRefunds.map((r) => r.status)),
+        );
+
+        setRefundReasons(["All Reasons", ...uniqueReasons]);
+        setRefundStatus(["All Statuses", ...uniqueStatuses]);
       }
     } catch (err) {
-      setError("Failed to fetch refund data")
-      console.error("Error fetching refund data:", err)
+      setError("Failed to fetch refund data");
+      console.error("Error fetching refund data:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filteredRefunds = refundData.filter((refund) => {
     const matchesSearch =
       refund.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       refund.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      refund.reason.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesReason = selectedReason === "All Reasons" || refund.reason === selectedReason
-    const matchesStatus = selectedStatus === "All Statuses" || refund.status === selectedStatus
-    return matchesSearch && matchesReason && matchesStatus
-  })
+      refund.reason.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesReason =
+      selectedReason === "All Reasons" || refund.reason === selectedReason;
+    const matchesStatus =
+      selectedStatus === "All Statuses" || refund.status === selectedStatus;
+    return matchesSearch && matchesReason && matchesStatus;
+  });
 
-  const pendingCount = refundData.filter((r) => r.status === "Pending").length
+  const pendingCount = refundData.filter((r) => r.status === "Pending").length;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Approved":
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
       case "Pending":
-        return <Clock className="h-4 w-4 text-orange-600" />
+        return <Clock className="h-4 w-4 text-orange-600" />;
       case "Rejected":
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-4 w-4 text-red-600" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
-        return "bg-green-500"
+        return "bg-green-500";
       case "Pending":
-        return "bg-orange-500"
+        return "bg-orange-500";
       case "Rejected":
-        return "bg-red-500"
+        return "bg-red-500";
       default:
-        return "bg-gray-500"
+        return "bg-gray-500";
     }
-  }
+  };
 
   const handleCreateRefund = () => {
-    setSelectedRefund(null)
-    setIsRefundModalOpen(true)
-  }
+    setSelectedRefund(null);
+    setIsRefundModalOpen(true);
+  };
 
   const handleEditRefund = (refund: Refund) => {
     setSelectedRefund({
       id: refund.id,
       student_id: refund.studentId,
-      course_id: '', // You may want to map course name to id if available
+      course_id: "", // You may want to map course name to id if available
       amount: refund.amount,
       refund_date: refund.date ? new Date(refund.date) : new Date(),
       reason: refund.reason,
       status: refund.status,
-      notes: '',
-    })
-    setIsRefundModalOpen(true)
-  }
+      notes: "",
+    });
+    setIsRefundModalOpen(true);
+  };
 
   const handleDeleteRefund = (refund: Refund) => {
-    setSelectedRefund(refund)
-    setIsDeleteModalOpen(true)
-  }
+    setSelectedRefund(refund);
+    setIsDeleteModalOpen(true);
+  };
 
   const handleSaveRefund = async (data: any) => {
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
       if (selectedRefund) {
         // Update
-        const { error } = await refundService.updateRefund(selectedRefund.id, data)
+        const { error } = await refundService.updateRefund(
+          selectedRefund.id,
+          data,
+        );
         if (error) {
-          toast({ title: "Error", description: error.message, variant: "destructive" })
-          return
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
         }
-        toast({ title: "Success", description: "Refund updated successfully" })
+        toast({ title: "Success", description: "Refund updated successfully" });
       } else {
         // Create
-        const { error } = await refundService.createRefund(data)
+        const { error } = await refundService.createRefund(data);
         if (error) {
-          toast({ title: "Error", description: error.message, variant: "destructive" })
-          return
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
         }
-        toast({ title: "Success", description: "Refund created successfully" })
+        toast({ title: "Success", description: "Refund created successfully" });
       }
-      setIsRefundModalOpen(false)
-      fetchData()
+      setIsRefundModalOpen(false);
+      fetchData();
     } catch (err) {
-      toast({ title: "Error", description: "Failed to save refund", variant: "destructive" })
+      toast({
+        title: "Error",
+        description: "Failed to save refund",
+        variant: "destructive",
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedRefund) return
+    if (!selectedRefund) return;
     try {
-      setIsSubmitting(true)
-      const { error } = await refundService.deleteRefund(selectedRefund.id)
+      setIsSubmitting(true);
+      const { error } = await refundService.deleteRefund(selectedRefund.id);
       if (error) {
-        toast({ title: "Error", description: error.message, variant: "destructive" })
-        return
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
       }
-      toast({ title: "Success", description: "Refund deleted successfully" })
-      setIsDeleteModalOpen(false)
-      fetchData()
+      toast({ title: "Success", description: "Refund deleted successfully" });
+      setIsDeleteModalOpen(false);
+      fetchData();
     } catch (err) {
-      toast({ title: "Error", description: "Failed to delete refund", variant: "destructive" })
+      toast({
+        title: "Error",
+        description: "Failed to delete refund",
+        variant: "destructive",
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -227,7 +291,7 @@ export default function AdminRefunds() {
           <span>Loading refund data...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -238,7 +302,7 @@ export default function AdminRefunds() {
           <Button onClick={fetchData}>Retry</Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -247,14 +311,21 @@ export default function AdminRefunds() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Refund Approvals</h1>
-          <p className="text-gray-600">Review and process student refund requests</p>
+          <p className="text-gray-600">
+            Review and process student refund requests
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleCreateRefund} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button
+            onClick={handleCreateRefund}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Add Refund
           </Button>
-          <Badge className="bg-orange-500 text-white px-3 py-1">{pendingCount} Pending Approvals</Badge>
+          <Badge className="bg-orange-500 text-white px-3 py-1">
+            {pendingCount} Pending Approvals
+          </Badge>
         </div>
       </div>
 
@@ -273,7 +344,10 @@ export default function AdminRefunds() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-blue-200 hover:bg-blue-50">
+                <Button
+                  variant="outline"
+                  className="border-blue-200 hover:bg-blue-50"
+                >
                   <Filter className="h-4 w-4 mr-2" />
                   {selectedReason}
                 </Button>
@@ -282,7 +356,10 @@ export default function AdminRefunds() {
                 <DropdownMenuLabel>Filter by Reason</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {refundReasons.map((reason) => (
-                  <DropdownMenuItem key={reason} onClick={() => setSelectedReason(reason)}>
+                  <DropdownMenuItem
+                    key={reason}
+                    onClick={() => setSelectedReason(reason)}
+                  >
                     {reason}
                   </DropdownMenuItem>
                 ))}
@@ -290,7 +367,10 @@ export default function AdminRefunds() {
             </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-blue-200 hover:bg-blue-50">
+                <Button
+                  variant="outline"
+                  className="border-blue-200 hover:bg-blue-50"
+                >
                   <Filter className="h-4 w-4 mr-2" />
                   {selectedStatus}
                 </Button>
@@ -299,7 +379,10 @@ export default function AdminRefunds() {
                 <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {refundStatus.map((status) => (
-                  <DropdownMenuItem key={status} onClick={() => setSelectedStatus(status)}>
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={() => setSelectedStatus(status)}
+                  >
                     {status}
                   </DropdownMenuItem>
                 ))}
@@ -316,13 +399,17 @@ export default function AdminRefunds() {
             <RefreshCw className="h-5 w-5 text-blue-600" />
             Refund Requests
           </CardTitle>
-          <CardDescription>Review and process student refund requests</CardDescription>
+          <CardDescription>
+            Review and process student refund requests
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredRefunds.length === 0 ? (
             <div className="text-center py-8">
               <RefreshCw className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No refund requests found matching your criteria.</p>
+              <p className="text-gray-500">
+                No refund requests found matching your criteria.
+              </p>
             </div>
           ) : (
             <Table>
@@ -343,16 +430,30 @@ export default function AdminRefunds() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={refund.avatar} alt={refund.studentName} />
-                          <AvatarFallback>{refund.studentName.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                          <AvatarImage
+                            src={refund.avatar}
+                            alt={refund.studentName}
+                          />
+                          <AvatarFallback>
+                            {refund.studentName
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium text-gray-900">{refund.studentName}</div>
-                          <div className="text-sm text-gray-600">{refund.email}</div>
+                          <div className="font-medium text-gray-900">
+                            {refund.studentName}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {refund.email}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">${refund.amount.toLocaleString()}</TableCell>
+                    <TableCell className="font-medium">
+                      ${refund.amount.toLocaleString()}
+                    </TableCell>
                     <TableCell>{refund.date}</TableCell>
                     <TableCell>{refund.reason}</TableCell>
                     <TableCell>{refund.requestDate}</TableCell>
@@ -377,12 +478,17 @@ export default function AdminRefunds() {
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditRefund(refund)}>
+                          <DropdownMenuItem
+                            onClick={() => handleEditRefund(refund)}
+                          >
                             <RefreshCw className="mr-2 h-4 w-4" />
                             Edit Refund
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteRefund(refund)}>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => handleDeleteRefund(refund)}
+                          >
                             <XCircle className="mr-2 h-4 w-4" />
                             Delete Refund
                           </DropdownMenuItem>
@@ -402,7 +508,11 @@ export default function AdminRefunds() {
         onClose={() => setIsRefundModalOpen(false)}
         onSave={handleSaveRefund}
         refund={selectedRefund}
-        students={refundData.map(r => ({ id: r.studentId, name: r.studentName, email: r.email }))}
+        students={refundData.map((r) => ({
+          id: r.studentId,
+          name: r.studentName,
+          email: r.email,
+        }))}
         isLoading={isSubmitting}
       />
       <DeleteConfirmModal
@@ -410,8 +520,10 @@ export default function AdminRefunds() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Refund"
-        description={`Are you sure you want to delete the refund for ${selectedRefund?.studentName || 'this student'}? This action cannot be undone.`}
-        isLoading={isSubmitting} itemName={""}      />
+        description={`Are you sure you want to delete the refund for ${selectedRefund?.studentName || "this student"}? This action cannot be undone.`}
+        isLoading={isSubmitting}
+        itemName={""}
+      />
     </div>
-  )
+  );
 }

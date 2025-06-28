@@ -1,35 +1,41 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Link } from "react-router-dom"
-import { GraduationCap, Mail, ArrowLeft } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { GraduationCap, Mail, ArrowLeft } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // In a real app, you would make an API call here
-    console.log("Password reset requested for:", email)
-    setIsSubmitted(true)
-    setIsLoading(false)
-  }
+    console.log("Password reset requested for:", email);
+    setIsSubmitted(true);
+    setIsLoading(false);
+  };
 
   if (isSubmitted) {
     return (
@@ -43,12 +49,18 @@ export default function ForgotPassword() {
                 </div>
               </div>
               <CardTitle>Check Your Email</CardTitle>
-              <CardDescription>We've sent a password reset link to {email}</CardDescription>
+              <CardDescription>
+                We've sent a password reset link to {email}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center text-sm text-gray-600">
                 <p>Didn't receive the email? Check your spam folder or</p>
-                <Button variant="link" className="p-0 h-auto text-blue-600" onClick={() => setIsSubmitted(false)}>
+                <Button
+                  variant="link"
+                  className="p-0 h-auto text-blue-600"
+                  onClick={() => setIsSubmitted(false)}
+                >
                   try again
                 </Button>
               </div>
@@ -66,7 +78,7 @@ export default function ForgotPassword() {
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -77,7 +89,9 @@ export default function ForgotPassword() {
             <div className="flex aspect-square size-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
               <GraduationCap className="size-6" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">AMEU Smart School</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              AMEU Smart School
+            </h1>
           </div>
         </div>
 
@@ -85,13 +99,16 @@ export default function ForgotPassword() {
           <CardHeader className="text-center">
             <CardTitle>Forgot Password?</CardTitle>
             <CardDescription>
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your email address and we'll send you a link to reset your
+              password.
             </CardDescription>
           </CardHeader>
           <CardContent>
             {error && (
               <Alert className="mb-4 border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">{error}</AlertDescription>
+                <AlertDescription className="text-red-700">
+                  {error}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -131,5 +148,5 @@ export default function ForgotPassword() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
