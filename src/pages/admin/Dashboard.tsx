@@ -67,94 +67,6 @@ export default function AdminDashboard() {
     totalAnnouncements: 0,
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        // Fetch all data in parallel
-        const [
-          studentsRes,
-          lecturersRes,
-          coursesRes,
-          paymentsRes,
-          announcementsRes,
-        ] = await Promise.all([
-          studentService.getStudents(),
-          lecturerService.getLecturers(),
-          courseService.getCourses(),
-          paymentService.getPayments(),
-          announcementService.getAnnouncements(),
-        ]);
-
-        // Calculate stats
-        const totalStudents = studentsRes.data?.length || 0;
-        const activeLecturers =
-          lecturersRes.data?.filter((l) => l.status === "active").length || 0;
-        const totalCourses = coursesRes.data?.length || 0;
-        const outstandingFees =
-          paymentsRes.data
-            ?.filter((p) => p.status === "pending")
-            .reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-        const totalAnnouncements = announcementsRes.data?.length || 0;
-
-        setStats({
-          totalStudents,
-          activeLecturers,
-          totalCourses,
-          outstandingFees,
-          totalAnnouncements,
-        });
-
-        // Generate recent activity from the data
-        const activity: RecentActivity[] = [];
-
-        // Add recent student registrations
-        studentsRes.data?.slice(0, 3).forEach((student) => {
-          activity.push({
-            id: student.id,
-            type: "registration",
-            user: student.profile.full_name,
-            action: "New student registration",
-            time: new Date(student.created_at).toLocaleDateString(),
-            status: "completed",
-          });
-        });
-
-        // Add recent payments
-        paymentsRes.data?.slice(0, 2).forEach((payment) => {
-          activity.push({
-            id: payment.id,
-            type: "payment",
-            user: payment.student.profile.full_name,
-            action: `Payment ${payment.status === "completed" ? "received" : "pending"}`,
-            time: new Date(payment.created_at).toLocaleDateString(),
-            status: payment.status,
-          });
-        });
-
-        // Add recent announcements
-        announcementsRes.data?.slice(0, 2).forEach((announcement) => {
-          activity.push({
-            id: announcement.id,
-            type: "announcement",
-            user: announcement.author.full_name,
-            action: "Created announcement",
-            time: new Date(announcement.created_at).toLocaleDateString(),
-            status: announcement.is_published ? "published" : "draft",
-          });
-        });
-
-        setRecentActivity(activity.slice(0, 5));
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -176,14 +88,6 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
       {/* Welcome Section */}
@@ -191,7 +95,7 @@ export default function AdminDashboard() {
         <CardContent className="p-8">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold">
-              Welcome back, {profile?.full_name}! 👨‍💼
+              Welcome back, {profile?.full_name || "Admin"}! 👨‍💼
             </h1>
             <p className="text-purple-100 text-lg">System Administrator</p>
             <p className="text-purple-200">{currentDate}</p>
@@ -281,40 +185,9 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity.length > 0 ? (
-                recentActivity.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-gray-50"
-                  >
-                    {getActivityIcon(activity.type)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {activity.user}
-                      </p>
-                      <p className="text-xs text-gray-600">{activity.action}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                      <Badge
-                        variant={
-                          activity.status === "completed" ||
-                          activity.status === "published"
-                            ? "default"
-                            : "secondary"
-                        }
-                        className="text-xs"
-                      >
-                        {activity.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-center py-4">
-                  No recent activity
-                </p>
-              )}
+              <p className="text-gray-500 text-center py-4">
+                No recent activity
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -345,10 +218,6 @@ export default function AdminDashboard() {
               <Button className="justify-start" variant="outline">
                 <FileText className="mr-2 h-4 w-4" />
                 Post Announcement
-              </Button>
-              <Button className="justify-start" variant="outline">
-                <CreditCard className="mr-2 h-4 w-4" />
-                View Payments
               </Button>
             </div>
           </CardContent>

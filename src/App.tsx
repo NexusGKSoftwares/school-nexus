@@ -1,14 +1,13 @@
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import React from "react";
 
 // Public Pages
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 
 // Auth Pages
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 
 // Student Pages
@@ -52,6 +51,13 @@ import AdminSupport from "./pages/admin/Support";
 import AdminExams from "./pages/admin/Exams";
 import AdminAnnouncements from "./pages/admin/Announcements";
 
+import AdminLogin from "./pages/admin/login";
+import AdminRegister from "./pages/admin/register";
+import LecturerLogin from "./pages/lecturer/login";
+import LecturerRegister from "./pages/lecturer/register";
+import StudentLogin from "./pages/student/login";
+import StudentRegister from "./pages/student/register";
+
 function App() {
   return (
     <AuthProvider>
@@ -61,8 +67,6 @@ function App() {
         <Route path="/home" element={<Home />} />
 
         {/* Auth Routes */}
-        <Route path="/auth/login" element={<Login />} />
-        <Route path="/auth/register" element={<Register />} />
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
 
         {/* Protected Student Routes */}
@@ -134,6 +138,18 @@ function App() {
           <Route path="settings" element={<AdminSettings />} />
           <Route path="support" element={<AdminSupport />} />
         </Route>
+
+        {/* Admin Auth */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/register" element={<AdminRegister />} />
+
+        {/* Lecturer Auth */}
+        <Route path="/lecturer/login" element={<LecturerLogin />} />
+        <Route path="/lecturer/register" element={<LecturerRegister />} />
+
+        {/* Student Auth */}
+        <Route path="/student/login" element={<StudentLogin />} />
+        <Route path="/student/register" element={<StudentRegister />} />
       </Routes>
     </AuthProvider>
   );

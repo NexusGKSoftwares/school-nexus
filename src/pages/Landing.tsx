@@ -161,7 +161,7 @@ export default function Landing() {
     {
       question: "Can I use it on mobile devices?",
       answer:
-        "Yes! AMEU Smart School is fully responsive and works seamlessly on smartphones, tablets, and desktop computers. You can access all features from any device with an internet connection.",
+        "Yes! NexusGK Smart School is fully responsive and works seamlessly on smartphones, tablets, and desktop computers. You can access all features from any device with an internet connection.",
     },
     {
       question: "Can it be integrated with other tools?",
@@ -254,7 +254,7 @@ export default function Landing() {
                 <GraduationCap className="size-5" />
               </div>
               <span className="text-xl font-bold text-gray-900">
-                AMEU Smart School
+                NexusGK Smart School
               </span>
             </div>
 
@@ -284,12 +284,18 @@ export default function Landing() {
               >
                 Contact
               </a>
-              <Link
-                to="/auth/login"
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-              >
-                Login
-              </Link>
+              <div className="relative group">
+                <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">Login</Button>
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-blue-100 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-50">
+                  <Link to="/student/register">Student Sign Up</Link>
+                  <Link to="/lecturer/register">Lecturer Sign Up</Link>
+                  <Link to="/admin/register">Admin Sign Up</Link>
+                  <Link to="/student/login">Student Login</Link>
+                  <Link to="/lecturer/login">Lecturer Login</Link>
+                  <Link to="/admin/login">Admin Login</Link>
+                  <div className="border-t border-blue-100 my-1"></div>
+                </div>
+              </div>
             </div>
 
             {/* Mobile menu button */}
@@ -336,12 +342,14 @@ export default function Landing() {
                 >
                   Contact
                 </a>
-                <Link
-                  to="/auth/login"
-                  className="block px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg text-center"
-                >
-                  Login
-                </Link>
+                <div className="mt-2 space-y-1">
+                  <Link to="/student/register">Student Sign Up</Link>
+                  <Link to="/lecturer/register">Lecturer Sign Up</Link>
+                  <Link to="/admin/register">Admin Sign Up</Link>
+                  <Link to="/student/login">Student Login</Link>
+                  <Link to="/lecturer/login">Lecturer Login</Link>
+                  <Link to="/admin/login">Admin Login</Link>
+                </div>
               </div>
             </div>
           )}
@@ -371,7 +379,7 @@ export default function Landing() {
               </div>
 
               <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Smart School System for{" "}
+               NexusGK Smart School System for{" "}
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   Modern Universities
                 </span>
@@ -384,23 +392,40 @@ export default function Landing() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:opacity-90 text-white shadow-lg"
-                >
-                  <Play className="h-5 w-5 mr-2" />
-                  Request Demo
-                </Button>
-                <Link to="/auth/login">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                  >
-                    Login to Portal
-                    <ArrowRight className="h-5 w-5 ml-2" />
-                  </Button>
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Link to="/student/register">
+                    <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:opacity-90 text-white shadow-lg">
+                      <Play className="h-5 w-5 mr-2" />Student Sign Up
+                    </Button>
+                  </Link>
+                  <Link to="/lecturer/register">
+                    <Button size="lg" className="bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 text-white shadow-lg">
+                      <Play className="h-5 w-5 mr-2" />Lecturer Sign Up
+                    </Button>
+                  </Link>
+                  <Link to="/admin/register">
+                    <Button size="lg" className="bg-gradient-to-r from-purple-500 to-violet-600 hover:opacity-90 text-white shadow-lg">
+                      <Play className="h-5 w-5 mr-2" />Admin Sign Up
+                    </Button>
+                  </Link>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Link to="/student/login">
+                    <Button size="lg" variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                      Student Login <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link to="/lecturer/login">
+                    <Button size="lg" variant="outline" className="border-green-200 text-green-600 hover:bg-green-50">
+                      Lecturer Login <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link to="/admin/login">
+                    <Button size="lg" variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                      Admin Login <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
 
               <div className="flex items-center gap-8 text-sm text-gray-600">
@@ -422,7 +447,7 @@ export default function Landing() {
             <div className="relative">
               <div className="relative z-10">
                 <img
-                  src="/placeholder.svg?height=600&width=800"
+                  src="/image.png?height=600&width=800"
                   alt="Dashboard Preview"
                   className="rounded-2xl shadow-2xl border border-blue-200"
                 />
@@ -556,26 +581,32 @@ export default function Landing() {
               {
                 title: "Student Dashboard",
                 description: "Clean, intuitive interface for students",
+                image: "/student.png",
               },
               {
                 title: "Lecturer Portal",
                 description: "Powerful tools for educators",
+                image: "/lecturer.png",
               },
               {
                 title: "Admin Panel",
                 description: "Comprehensive system management",
+                image: "/admin.png",
               },
               {
                 title: "Mobile Experience",
                 description: "Fully responsive on all devices",
+                image: "/mobile.png",
               },
               {
                 title: "Payment Processing",
                 description: "Secure financial transactions",
+                image: "/payment.png",
               },
               {
                 title: "Analytics & Reports",
                 description: "Data-driven insights",
+                image: "/analytics.png",
               },
             ].map((item, index) => (
               <Card
@@ -585,7 +616,7 @@ export default function Landing() {
                 <CardContent className="p-0">
                   <div className="aspect-video bg-gradient-to-br from-blue-50 to-indigo-100 rounded-t-lg flex items-center justify-center group-hover:from-blue-100 group-hover:to-indigo-200 transition-colors">
                     <img
-                      src={`/placeholder.svg?height=200&width=300&text=${encodeURIComponent(item.title)}`}
+                      src={item.image}
                       alt={item.title}
                       className="rounded opacity-80 group-hover:opacity-100 transition-opacity"
                     />
@@ -606,7 +637,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose AMEU Smart School?
+              Why Choose NexusGK Smart School?
             </h2>
             <p className="text-xl text-gray-600">
               Built specifically for African universities with modern technology
@@ -764,25 +795,26 @@ export default function Landing() {
             Ready to Digitize Your School?
           </h2>
           <p className="text-xl mb-8 text-blue-100">
-            Join thousands of institutions already using AMEU Smart School to
+            Join thousands of institutions already using NexusGK Smart School to
             streamline their operations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-white text-blue-600 hover:bg-gray-100"
-            >
-              <Play className="h-5 w-5 mr-2" />
-              Book a Demo
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+              <Play className="h-5 w-5 mr-2" />Book a Demo
             </Button>
-            <Link to="/auth/login">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-blue-600"
-              >
-                Login Now
-                <ArrowRight className="h-5 w-5 ml-2" />
+            <Link to="/student/login">
+              <Button size="lg" variant="outline" className="border-white bg-blue hover:bg-white hover:text-blue-600">
+                Student Login <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </Link>
+            <Link to="/lecturer/login">
+              <Button size="lg" variant="outline" className="border-white bg-green-50 hover:bg-white hover:text-green-600">
+                Lecturer Login <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </Link>
+            <Link to="/admin/login">
+              <Button size="lg" variant="outline" className="border-white bg-purple-50 hover:bg-white hover:text-purple-600">
+                Admin Login <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
           </div>
@@ -798,7 +830,7 @@ export default function Landing() {
                 <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
                   <GraduationCap className="size-5" />
                 </div>
-                <span className="text-xl font-bold">AMEU Smart School</span>
+                <span className="text-xl font-bold">NexusGK Smart School</span>
               </div>
               <p className="text-gray-400 mb-6 max-w-md">
                 Empowering African universities with modern technology solutions
@@ -839,48 +871,16 @@ export default function Landing() {
             <div>
               <h3 className="font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a
-                    href="#features"
-                    className="hover:text-white transition-colors"
-                  >
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#pricing"
-                    className="hover:text-white transition-colors"
-                  >
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <Link
-                    to="/auth/login"
-                    className="hover:text-white transition-colors"
-                  >
-                    Login
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/auth/register"
-                    className="hover:text-white transition-colors"
-                  >
-                    Sign Up
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Support
-                  </a>
-                </li>
+                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><Link to="/student/login" className="hover:text-white transition-colors">Student Login</Link></li>
+                <li><Link to="/lecturer/login" className="hover:text-white transition-colors">Lecturer Login</Link></li>
+                <li><Link to="/admin/login" className="hover:text-white transition-colors">Admin Login</Link></li>
+                <li><Link to="/student/register" className="hover:text-white transition-colors">Student Sign Up</Link></li>
+                <li><Link to="/lecturer/register" className="hover:text-white transition-colors">Lecturer Sign Up</Link></li>
+                <li><Link to="/admin/register" className="hover:text-white transition-colors">Admin Sign Up</Link></li>
+                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
               </ul>
             </div>
 
@@ -889,11 +889,11 @@ export default function Landing() {
               <ul className="space-y-3 text-gray-400">
                 <li className="flex items-center gap-3">
                   <Mail className="h-5 w-5" />
-                  <span>info@ameusmartschool.com</span>
+                  <span>info@nexusgksmartschool.com</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="h-5 w-5" />
-                  <span>+234 (0) 123 456 7890</span>
+                  <span>+254 791 431 287 </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 mt-0.5" />
@@ -901,6 +901,8 @@ export default function Landing() {
                     Lagos, Nigeria
                     <br />
                     Accra, Ghana
+                    <br />
+                    Nairobi, Kenya
                   </span>
                 </li>
               </ul>
@@ -908,7 +910,7 @@ export default function Landing() {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 AMEU Smart School. All rights reserved.</p>
+            <p>&copy;  {new Date().getFullYear()} NexusGK Smart School. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -166,16 +166,12 @@ CREATE POLICY "Users can view their own profile" ON profiles
 CREATE POLICY "Users can update their own profile" ON profiles
     FOR UPDATE USING (auth.uid() = id);
 
+-- Allow profile creation by trigger function (SECURITY DEFINER)
+CREATE POLICY "Allow profile creation by trigger" ON profiles
+    FOR INSERT WITH CHECK (true);
+
 CREATE POLICY "Admins can view all profiles" ON profiles
     FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM profiles 
-            WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
-
-CREATE POLICY "Admins can insert profiles" ON profiles
-    FOR INSERT WITH CHECK (
         EXISTS (
             SELECT 1 FROM profiles 
             WHERE id = auth.uid() AND role = 'admin'
@@ -220,6 +216,10 @@ CREATE POLICY "Admins can manage students" ON students
         )
     );
 
+-- Allow student creation during signup
+CREATE POLICY "Allow student creation during signup" ON students
+    FOR INSERT WITH CHECK (profile_id = auth.uid());
+
 -- RLS Policies for lecturers
 CREATE POLICY "Lecturers can view their own data" ON lecturers
     FOR SELECT USING (
@@ -237,6 +237,10 @@ CREATE POLICY "Admins can manage lecturers" ON lecturers
             WHERE id = auth.uid() AND role = 'admin'
         )
     );
+
+-- Allow lecturer creation during signup
+CREATE POLICY "Allow lecturer creation during signup" ON lecturers
+    FOR INSERT WITH CHECK (profile_id = auth.uid());
 
 -- RLS Policies for courses
 CREATE POLICY "Everyone can view courses" ON courses

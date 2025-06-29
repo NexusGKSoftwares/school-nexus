@@ -36,6 +36,186 @@ export type Database = {
         Update: Partial<Omit<Database["public"]["Tables"]["profiles"]["Row"], "id">>;
       };
       
+      faculties: {
+        Row: {
+          id: string;
+          name: string;
+          code: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          code: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["faculties"]["Row"], "id">>;
+      };
+
+      students: {
+        Row: {
+          id: string;
+          profile_id: string;
+          student_number: string;
+          faculty_id: string;
+          enrollment_date: string;
+          graduation_date: string | null;
+          status: "active" | "graduated" | "suspended" | "withdrawn";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          student_number: string;
+          faculty_id: string;
+          enrollment_date: string;
+          graduation_date?: string | null;
+          status?: "active" | "graduated" | "suspended" | "withdrawn";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["students"]["Row"], "id">>;
+      };
+
+      lecturers: {
+        Row: {
+          id: string;
+          profile_id: string;
+          employee_number: string;
+          faculty_id: string;
+          hire_date: string;
+          specialization: string | null;
+          status: "active" | "inactive" | "on_leave";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          employee_number: string;
+          faculty_id: string;
+          hire_date: string;
+          specialization?: string | null;
+          status?: "active" | "inactive" | "on_leave";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["lecturers"]["Row"], "id">>;
+      };
+
+      courses: {
+        Row: {
+          id: string;
+          title: string;
+          code: string;
+          description: string | null;
+          credits: number;
+          faculty_id: string;
+          lecturer_id: string | null;
+          semester: number;
+          academic_year: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          code: string;
+          description?: string | null;
+          credits: number;
+          faculty_id: string;
+          lecturer_id?: string | null;
+          semester: number;
+          academic_year: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["courses"]["Row"], "id">>;
+      };
+
+      enrollments: {
+        Row: {
+          id: string;
+          student_id: string;
+          course_id: string;
+          enrollment_date: string;
+          status: "enrolled" | "completed" | "dropped" | "failed";
+          grade: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          student_id: string;
+          course_id: string;
+          enrollment_date: string;
+          status?: "enrolled" | "completed" | "dropped" | "failed";
+          grade?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["enrollments"]["Row"], "id">>;
+      };
+
+      announcements: {
+        Row: {
+          id: string;
+          title: string;
+          content: string;
+          author_id: string;
+          target_audience: "all" | "students" | "lecturers" | "admins";
+          is_published: boolean;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          content: string;
+          author_id: string;
+          target_audience?: "all" | "students" | "lecturers" | "admins";
+          is_published?: boolean;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["announcements"]["Row"], "id">>;
+      };
+
+      payments: {
+        Row: {
+          id: string;
+          student_id: string;
+          amount: number;
+          payment_type: "tuition" | "library_fine" | "other";
+          status: "pending" | "completed" | "failed" | "refunded";
+          payment_date: string | null;
+          due_date: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          student_id: string;
+          amount: number;
+          payment_type?: "tuition" | "library_fine" | "other";
+          status?: "pending" | "completed" | "failed" | "refunded";
+          payment_date?: string | null;
+          due_date: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<Database["public"]["Tables"]["payments"]["Row"], "id">>;
+      };
+      
       // Extend other tables as needed
       assignments: { Row: any; Insert: any; Update: any };
       materials: { Row: any; Insert: any; Update: any };
@@ -50,16 +230,16 @@ export type Database = {
       registrations: { Row: any; Insert: any; Update: any };
       staff: { Row: any; Insert: any; Update: any };
       calendar_events: { Row: any; Insert: any; Update: any };
-      faculties: { Row: any; Insert: any; Update: any };
-      students: { Row: any; Insert: any; Update: any };
-      lecturers: { Row: any; Insert: any; Update: any };
-      courses: { Row: any; Insert: any; Update: any };
-      enrollments: { Row: any; Insert: any; Update: any };
-      announcements: { Row: any; Insert: any; Update: any };
-      payments: { Row: any; Insert: any; Update: any };
     };
   };
 };
 
-// Create the client
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Create the client with localStorage to prevent SecurityError
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    storage: localStorage,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});

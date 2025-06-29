@@ -45,16 +45,30 @@ export default function Login() {
     setIsLoading(true);
     setError("");
 
-    const { error } = await signIn(email, password);
+    try {
+      console.log("Attempting login with:", email);
+      const { error } = await signIn(email, password);
 
-    if (error) {
-      setError(
-        error.message || "Failed to sign in. Please check your credentials.",
-      )
+      if (error) {
+        console.error("Login error:", error);
+        setError(
+          error.message || "Failed to sign in. Please check your credentials.",
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("Login successful, waiting for profile...");
+      // Reset loading state after successful login
+      setIsLoading(false);
+      
+      // The AuthContext will handle the redirect automatically
+      // The useEffect above will detect the profile change and redirect
+    } catch (error) {
+      console.error("Login exception:", error);
+      setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
-
-    
   };
 
   const userTypeConfig = {

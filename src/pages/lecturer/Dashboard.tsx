@@ -77,7 +77,7 @@ interface Announcement {
 
 export default function LecturerDashboard() {
   const { profile } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [overview, setOverview] = useState<DashboardOverview>({
     assignedCourses: 0,
@@ -217,17 +217,6 @@ export default function LecturerDashboard() {
     month: "long",
     day: "numeric",
   });
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading your dashboard...</span>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (

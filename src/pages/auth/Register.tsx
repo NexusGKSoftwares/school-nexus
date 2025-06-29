@@ -1,7 +1,6 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, GraduationCap, User, Shield } from "lucide-react";
 
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
 export default function Register() {
@@ -43,7 +43,32 @@ export default function Register() {
     agreeToTerms: false,
   });
   const [error, setError] = useState("");
+  const [faculties, setFaculties] = useState<any[]>([]);
   const navigate = useNavigate();
+  const { signUp } = useAuth();
+
+  // Fetch faculties for department selection
+  React.useEffect(() => {
+    const fetchFaculties = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("faculties")
+          .select("id, name, code")
+          .order("name");
+        
+        if (error) {
+          console.error("Error fetching faculties:", error);
+          return;
+        }
+        
+        setFaculties(data || []);
+      } catch (error) {
+        console.error("Error fetching faculties:", error);
+      }
+    };
+
+    fetchFaculties();
+  }, []);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -66,68 +91,44 @@ export default function Register() {
       return;
     }
 
-    // Sign up with metadata
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
-      {
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: `${formData.firstName} ${formData.lastName}`,
-            role: userType,
-          },
-        },
-      },
+    const fullName = `${formData.firstName} ${formData.lastName}`;
+    const role = userType as "admin" | "lecturer" | "student";
+
+    // Prepare additional data for role-specific tables
+    let additionalData = null;
+    
+    if (userType === "student") {
+      additionalData = {
+        studentData: {
+          studentId: formData.studentId || `STU${Date.now()}`,
+          facultyId: formData.department || faculties[0]?.id,
+        }
+      };
+    } else if (userType === "lecturer") {
+      additionalData = {
+        lecturerData: {
+          employeeId: formData.studentId || `EMP${Date.now()}`,
+          facultyId: formData.department || faculties[0]?.id,
+        }
+      };
+    }
+
+    // Sign up using the improved AuthContext function
+    const { error: signUpError } = await signUp(
+      formData.email,
+      formData.password,
+      fullName,
+      role,
+      additionalData
     );
 
     if (signUpError) {
-      setError(signUpError.message);
+      setError(signUpError.message || "Registration failed. Please try again.");
       setIsLoading(false);
       return;
     }
 
-    // Wait for the trigger to create the profile
-    let profileId = signUpData.user?.id;
-    if (!profileId) {
-      setError("Registration failed. Please try again.");
-      setIsLoading(false);
-      return;
-    }
-
-    // Insert into students or lecturers if needed
-    if (userType === "student") {
-      const { error: studentError } = await supabase.from("students").insert([
-        {
-          profile_id: profileId,
-          student_number: formData.studentId,
-          faculty_id: formData.department || null,
-          enrollment_date: new Date().toISOString().slice(0, 10),
-          status: "active",
-        },
-      ]);
-      if (studentError) {
-        setError(studentError.message);
-        setIsLoading(false);
-        return;
-      }
-    } else if (userType === "lecturer") {
-      const { error: lecturerError } = await supabase.from("lecturers").insert([
-        {
-          profile_id: profileId,
-          employee_number: formData.studentId || "-",
-          faculty_id: formData.department || null,
-          hire_date: new Date().toISOString().slice(0, 10),
-          status: "active",
-        },
-      ]);
-      if (lecturerError) {
-        setError(lecturerError.message);
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    // Success
+    // Success - redirect to login
     navigate("/auth/login");
     setIsLoading(false);
   };
@@ -208,24 +209,23 @@ export default function Register() {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    placeholder="Enter first name"
+                    type="text"
+                    placeholder="Enter your first name"
                     value={formData.firstName}
-                    onChange={(e) =>
-                      handleInputChange("firstName", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange("firstName", e.target.value)}
                     required
                     className="border-blue-200 focus:border-blue-400"
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    placeholder="Enter last name"
+                    type="text"
+                    placeholder="Enter your last name"
                     value={formData.lastName}
-                    onChange={(e) =>
-                      handleInputChange("lastName", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange("lastName", e.target.value)}
                     required
                     className="border-blue-200 focus:border-blue-400"
                   />
@@ -245,48 +245,42 @@ export default function Register() {
                 />
               </div>
 
-              {userType === "student" && (
-                <div className="space-y-2">
-                  <Label htmlFor="studentId">Student ID</Label>
-                  <Input
-                    id="studentId"
-                    placeholder="Enter your student ID"
-                    value={formData.studentId}
-                    onChange={(e) =>
-                      handleInputChange("studentId", e.target.value)
-                    }
-                    required
-                    className="border-blue-200 focus:border-blue-400"
-                  />
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="studentId">
+                  {userType === "student" ? "Student ID" : "Employee ID"}
+                </Label>
+                <Input
+                  id="studentId"
+                  type="text"
+                  placeholder={
+                    userType === "student"
+                      ? "Enter your student ID"
+                      : "Enter your employee ID"
+                  }
+                  value={formData.studentId}
+                  onChange={(e) => handleInputChange("studentId", e.target.value)}
+                  className="border-blue-200 focus:border-blue-400"
+                />
+              </div>
 
-              {(userType === "lecturer" || userType === "admin") && (
-                <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Select
-                    onValueChange={(value) =>
-                      handleInputChange("department", value)
-                    }
-                  >
-                    <SelectTrigger className="border-blue-200 focus:border-blue-400">
-                      <SelectValue placeholder="Select department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="computer-science">
-                        Computer Science
+              <div className="space-y-2">
+                <Label htmlFor="department">Department/Faculty</Label>
+                <Select
+                  value={formData.department}
+                  onValueChange={(value) => handleInputChange("department", value)}
+                >
+                  <SelectTrigger className="border-blue-200 focus:border-blue-400">
+                    <SelectValue placeholder="Select your department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {faculties.map((faculty) => (
+                      <SelectItem key={faculty.id} value={faculty.id}>
+                        {faculty.name} ({faculty.code})
                       </SelectItem>
-                      <SelectItem value="mathematics">Mathematics</SelectItem>
-                      <SelectItem value="physics">Physics</SelectItem>
-                      <SelectItem value="chemistry">Chemistry</SelectItem>
-                      <SelectItem value="biology">Biology</SelectItem>
-                      <SelectItem value="engineering">Engineering</SelectItem>
-                      <SelectItem value="business">Business</SelectItem>
-                      <SelectItem value="arts">Arts</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
@@ -294,27 +288,23 @@ export default function Register() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
+                    placeholder="Enter your password"
                     value={formData.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange("password", e.target.value)}
                     required
                     className="border-blue-200 focus:border-blue-400 pr-10"
                   />
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
+                      <EyeOff className="h-4 w-4" />
                     ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
+                      <Eye className="h-4 w-4" />
                     )}
-                  </Button>
+                  </button>
                 </div>
               </div>
 
@@ -332,73 +322,62 @@ export default function Register() {
                     required
                     className="border-blue-200 focus:border-blue-400 pr-10"
                   />
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
+                      <EyeOff className="h-4 w-4" />
                     ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
+                      <Eye className="h-4 w-4" />
                     )}
-                  </Button>
+                  </button>
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="terms"
+                  id="agreeToTerms"
                   checked={formData.agreeToTerms}
                   onCheckedChange={(checked) =>
                     handleInputChange("agreeToTerms", checked as boolean)
                   }
                 />
-                <Label htmlFor="terms" className="text-sm">
+                <Label
+                  htmlFor="agreeToTerms"
+                  className="text-sm text-gray-600"
+                >
                   I agree to the{" "}
-                  <Link to="/terms" className="text-blue-600 hover:underline">
+                  <Link
+                    to="/terms"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
                     Terms and Conditions
-                  </Link>{" "}
-                  and{" "}
-                  <Link to="/privacy" className="text-blue-600 hover:underline">
-                    Privacy Policy
                   </Link>
                 </Label>
               </div>
 
               <Button
                 type="submit"
-                className={`w-full bg-gradient-to-r ${currentConfig.color} hover:opacity-90 text-white shadow-lg`}
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
-            </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <div className="text-center text-sm text-gray-600">
                 Already have an account?{" "}
                 <Link
                   to="/auth/login"
-                  className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                  className="text-blue-600 hover:text-blue-800 underline"
                 >
                   Sign in
                 </Link>
-              </p>
-            </div>
+              </div>
+            </form>
           </CardContent>
         </Card>
-
-        <div className="mt-8 text-center">
-          <Link
-            to="/"
-            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-          >
-            ← Back to Home
-          </Link>
-        </div>
       </div>
     </div>
   );
